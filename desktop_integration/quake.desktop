@@ -1,0 +1,16 @@
+[Desktop Entry]
+Name=Quake
+GenericName=q1
+Exec=/path/to/quakelaunch %f
+Icon=/path/to/quake-icon-512.png
+Type=Application
+MimeType=application/x-quake;application/x-bsp-map;inode/directory;application/zip
+Terminal=false
+Encoding=UTF-8
+Categories=Game;
+X-SuSE-translate=false
+Name[en_US]=Quake
+X-GNOME-FullName[en_US]=Quake
+Comment[en_US]=
+NoDisplay=false
+X-GNOME-UsesNotifications=false

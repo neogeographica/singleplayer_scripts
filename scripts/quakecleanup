@@ -1,0 +1,102 @@
+#!/usr/bin/env bash
+
+thisdir=$(dirname $(readlink -f $0))
+
+source "$thisdir"/quakelaunch.conf
+
+shopt -s extglob
+
+# Choose from a random set of error beeps and play it.
+function beep {
+  if [[ ${#beepsound[@]} -ne 0 ]]
+  then
+    paplay ${beepsound[$RANDOM % ${#beepsound[@]}]}
+  fi
+}
+
+# Print a message. Then post it as a notification and/or beep.
+function message {
+  echo $1
+  if [[ -n "$notification_icon" ]]
+  then
+    notify-send --icon="$notification_icon" "$1"
+  fi
+  beep
+}
+
+# Print usage statement and beep.
+function usage {
+  message "usage: quakecleanup gamedir|foo.quake"
+}
+
+# Make sure the config has been populated.
+if [[ -z "$basedir" ]]
+then
+  message "necessary option(s) in quakelaunch.conf have not been specified"
+  exit 1
+fi
+
+# Take care of the simplest arguments cases:
+
+# Exactly one arg
+if [[ -n "$2" || -z "$1" ]]
+then
+  usage
+  exit 1
+fi
+
+arg="$1"
+gamedir=""
+
+function gamedir_for_shortcut {
+  shortcut="$1"
+  gamedir=$(cat "$shortcut")
+  gamedir=${gamedir##+([[:space:]])}
+  gamedir=${gamedir%%+([[:space:]])}
+  if [[ -z "$gamedir" ]]
+  then
+    gamedir=$(basename "$shortcut")
+    gamedir="$basedir"/"${gamedir%.*}"
+  fi
+  echo "$gamedir"
+}
+
+if [[ -f "$arg" ]]
+then
+  if [[ "${arg##*.}" == "quake" ]]
+  then
+    gamedir=$(gamedir_for_shortcut "$arg")
+  else
+    usage
+    exit 1
+  fi
+else
+  gamedir="$arg"
+fi
+
+# There could theoretically be multiple shortcuts that point at this gamedir.
+# Anyway delete any shortcut in shortcuts_dir that points at it.
+if [[ -n "$shortcuts_dir" && -d "$shortcuts_dir" ]]
+then
+  for file in $(ls -1 "$shortcuts_dir"/*.quake 2> /dev/null)
+  do
+    target=$(gamedir_for_shortcut "$file")
+    if [[ "$target" == "$gamedir" ]]
+    then
+      rm -f "$file"
+    fi
+  done
+fi
+
+# And delete the gamedir if it still exists. We'll be a little paranoid and
+# not delete directories that don't appear to be in a Quake installation.
+if [[ -n "$gamedir" && -d "$gamedir" ]]
+then
+  gamedirparent=$(dirname "$gamedir")
+  if [[ ! -d "$gamedirparent"/id1 ]]
+  then
+    message "target directory is not inside a Quake installation; not deleting it"
+    exit 1
+  fi
+  rm -rf "$gamedir"
+fi

@@ -1,0 +1,14 @@
+[Desktop Entry]
+Name=Quake mod cleanup
+Exec=/path/to/quakecleanup %f
+Type=Application
+MimeType=application/x-quake;inode/directory
+Terminal=false
+Encoding=UTF-8
+Categories=Game;
+X-SuSE-translate=false
+Name[en_US]=Quake mod cleanup
+X-GNOME-FullName[en_US]=Quake mod cleanup
+Comment[en_US]=
+NoDisplay=true
+X-GNOME-UsesNotifications=false

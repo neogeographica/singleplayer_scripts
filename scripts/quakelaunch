@@ -1,0 +1,501 @@
+#!/usr/bin/env bash
+
+thisdir=$(dirname $(readlink -f $0))
+
+source "$thisdir"/quakelaunch.conf
+quakedir=$(dirname "$quake")
+
+# Going to use nocaseglob to do some case-insensitive file listing/matching.
+shopt -s nocaseglob extglob
+
+# Choose from a random set of error beeps and play it.
+function beep {
+  if [[ ${#beepsound[@]} -ne 0 ]]
+  then
+    paplay ${beepsound[$RANDOM % ${#beepsound[@]}]}
+  fi
+}
+
+# Print a message. Then post it as a notification and/or beep.
+function message {
+  echo $1
+  if [[ -n "$notification_icon" ]]
+  then
+    notify-send --icon="$notification_icon" "$1"
+  fi
+  beep
+}
+
+# Print usage statement and beep.
+function usage {
+  message "usage: quakelaunch [archive|gamedir|foo.bsp|foo.quake]"
+}
+
+# Make sure the config has been populated.
+if [[ -z "$basedir" || -z "$quake" ]]
+then
+  message "necessary option(s) in quakelaunch.conf have not been specified"
+  exit 1
+fi
+
+# Take care of the simplest arguments cases:
+
+# Forbid more than one arg.
+if [[ -n "$2" ]]
+then
+  usage
+  exit 1
+fi
+
+# Simple launch if no args.
+if [[ -z "$1" ]]
+then
+  cd "$quakedir"
+  exec "$quake" -basedir "$basedir"
+fi
+
+# OK we have more complicated stuff to do! A few more utility functions:
+
+# Function to see if the cwd is in a gamedir with a pak file or (qw)progs.dat.
+function is_standalone {
+  # XXX If expak is installed we could grope the paks to see if they contain
+  # a progs.dat. However it would generally be really odd for a release to have
+  # a pak file at all if it's intended to be dropped into some other mod, so
+  # that's probably not necessary.
+  paksfound=$(find . -type f -iname '*.pak')
+  if [[ -n "$paksfound" ]]
+  then
+    echo true
+    return
+  fi
+  progsfound=$(find . -type f -iname '*progs.dat')
+  if [[ -n "$progsfound" ]]
+  then
+    echo true
+    return
+  fi
+  echo false
+}
+
+# Function to force known-by-Quake subdirectories to lowercase.
+# Defining knowndirs here for reference since it will also be used elsewhere.
+# For simplicity the recap function just hardcodes the same set of dirs.
+knowndirs="gfx locs maps music particles progs skins sound textures"
+function recap_dirs {
+  # Using match patterns of any kind here will force case-insensitive match
+  # for the whole name (from the shopt -s nocaseglob).
+  mv [Gg]fx gfx 2>/dev/null
+  mv [Ll]ocs locs 2>/dev/null
+  mv [Mm]aps maps 2>/dev/null
+  mv [Mm]usic music 2>/dev/null
+  mv [Pp]articles particles 2>/dev/null
+  mv [Pp]rogs progs 2>/dev/null
+  mv [Ss]kins skins 2>/dev/null
+  mv [Ss]ound sound 2>/dev/null
+  mv [Tt]extures textures 2>/dev/null
+}
+
+# Function to force some filenames (or just extensions) to lowercase. Quake
+# assumes lowercase extensions for: pak/dem/sav files, stuff in the maps dir,
+# stuff in the locs dir, and stuff in the music dir. In the case of pak files
+# we'll lowercase the whole name.
+function recap_files {
+  pakfiles=$(ls -1d *.pak 2>/dev/null)
+  for file in $pakfiles
+  do
+    goodfile=$(echo $file | tr '[:upper:]' '[:lower:]')
+    mv "$file" "$goodfile" 2>/dev/null
+  done
+  extfiles=$(ls -1d *.dem *.sav locs/*.* maps/*.* music/*.* 2>/dev/null)
+  for file in $extfiles
+  do
+    filebase=${file%.*}
+    fileext=$(echo ${file##*.} | tr '[:upper:]' '[:lower:]')
+    mv "$file" "$filebase".$fileext 2>/dev/null
+  done
+}
+
+# XXX Note that this script doesn't (and can't easily) fix cases where
+# filepaths baked into the bsp or quake.rc or etc. have the wrong
+# capitalization compared to the actual files. In that case you kind of just
+# have to watch the console for errors and fix manually by renaming or making
+# symlinks.
+
+# We have some target file or directory to process now.
+
+arg="$1"
+maplist=""
+basegame=""
+bsp=""
+
+# First handle any ".quake" shortcut.
+if [[ -f "$arg" && "${arg##*.}" == "quake" ]]
+then
+  # If the file has content, treat that content as the arg. Otherwise treat
+  # $basedir/$argbasename as the arg.
+  shortcut=$(cat "$arg")
+  shortcut=${shortcut##+([[:space:]])}
+  shortcut=${shortcut%%+([[:space:]])}
+  if [[ -z "$shortcut" ]]
+  then
+    arg=$(basename "$arg")
+    arg="$basedir"/"${arg%.*}"
+  else
+    arg="$shortcut"
+  fi
+fi
+
+# If the argument is a file, we have some things to figure out before launch.
+if [[ -f "$arg" ]]
+then
+  # We don't do file case-fixing until we're sure we're in a gamedir (later),
+  # so use case-insensitive match to check the extension here.
+  if [[ "${arg##*.}" =~ ^bsp$ ]]
+  then
+    # It's a bsp file; climb up to find the gamedir. Then fall through into
+    # the gamedir processing below, with a forced bsp.
+    mapsdir=$(dirname "$arg")
+    bsp=$(basename "$arg")
+    arg=$(dirname "$mapsdir")
+  else
+    # Not a bsp. Let's see if we can open it as an archive.
+    tmpdir=$(mktemp -d)
+    aunpack -qX "$tmpdir" "$arg"
+    if [[ $? -ne 0 ]]
+    then
+      rm -rf "$tmpdir"
+      if which aunpack >/dev/null
+      then
+        usage
+      else
+        message "aunpack utility not found; required to open archives"
+      fi
+      exit 1
+    fi
+    cd "$tmpdir"
+    # If readme mentions Copper or Arcane Dimensions, it's not clear how
+    # we should install this, unless it is itself a standalone mod.
+    # Exception if we have defined the ability to use copper/ad as a basegame.
+    if [[ -z "$ad_basegame_args" ]]
+    then
+      # Also match singular "Arcane Dimension" since some folks call it that.
+      ad_found=$(find . -type f \( -iname '*.txt' -o -iname '*.htm*' -o -iname 'readme*' \) -exec grep -i "arcane dimension" {} \;)
+      if [[ -n "$ad_found" && $(is_standalone) == "false" ]]
+      then
+        rm -rf "$tmpdir"
+        message "Archive contains a text file that mentions Arcane Dimensions. It's not clear how to auto-install this, so bailing out."
+        exit 1
+      fi
+    fi
+    if [[ -z "$copper_basegame_args" ]]
+    then
+      copper_found=$(find . -type f \( -iname '*.txt' -o -iname '*.htm*' -o -iname 'readme*' \) -exec grep -i copper {} \;)
+      if [[ -n "$copper_found" && $(is_standalone) == "false" ]]
+      then
+        rm -rf "$tmpdir"
+        message "Archive contains a text file that mentions Copper. It's not clear how to auto-install this, so bailing out."
+        exit 1
+      fi
+    fi
+    # Move the extracted contents to a new gamedir, named after the archive.
+    destdir=$(basename "$arg")
+    destdir=${destdir%%.*}
+    if [[ "$destdir" == "quoth2pt2full" ]]
+    then
+        # Special treatment for this Quoth release; it still needs to use the
+        # directory name "quoth".
+        destdir=quoth
+    fi
+    destdir="$basedir"/"$destdir"
+    mv -T "$tmpdir" "$destdir"
+    if [[ $? -ne 0 ]]
+    then
+      rm -rf $tmpdir
+      if [[ -f "$destdir" ]]
+      then
+        message "$destdir already exists"
+      else
+        message "unable to create gamedir $destdir"
+      fi
+      exit 1
+    fi
+    # We've got our gamedir, so see if we can make a shortcut (if enabled).
+    if [[ -n "$shortcuts_dir" ]]
+    then
+      mod=$(basename "$destdir")
+      tmpfile=$(mktemp)
+      echo -n "$destdir" > $tmpfile
+      mkdir -p "$shortcuts_dir"
+      mv "$tmpfile" "$shortcuts_dir"/"$mod".quake
+      if [[ $? -ne 0 ]]
+      then
+        rm -rf $destdir
+        rm -f $tmpfile
+        if [[ ! -d "$shortcuts_dir" ]]
+        then
+          message "shortcuts dir $shortcuts_dir does not exist"
+        else
+          if [[ -f "$destdir" ]]
+          then
+            message "shortcut for $mod already exists"
+          else
+            message "unable to create shortcut for $mod"
+          fi
+        fi
+        exit 1
+      fi
+    fi
+    # Take our best shot at making this playable.
+    cd "$destdir"
+    # Try to get rid of any extra directories generated in archive-creation,
+    # as well as other files we don't want.
+    while true
+    do
+      # Get rid of Windows stuff, config.cfg, and autoexec.cfg
+      # Using match patterns with the config files to force case-insensitive
+      # match for the whole name (from the shopt -s nocaseglob).
+      rm -f *.exe *.dll [Cc]onfig.cfg [Aa]utoexec.cfg
+      # If (other than docs) there is only one file here, and its a
+      # subdirectory, and it's not a known Quake content directory... it's
+      # probably packaging cruft. Move its contents up and keep looping.
+      stuffhere=$(ls -1 --ignore=*.txt --ignore=*.htm* --ignore=readme*)
+      if [[ $(echo "$stuffhere" | wc -l) -eq 1 ]]
+      then
+        if [[ -d "$stuffhere" ]]
+        then
+          echo "$knowndirs" | grep -qwi "$stuffhere"
+          if [[ $? -ne 0 ]]
+          then
+            mv "$stuffhere"/* .
+            if [[ $? -ne 0 ]]
+            then
+              rm -rf "$destdir"
+              message "failed in organizing the extracted archive contents"
+              exit 1
+            fi
+            rm -rf "$stuffhere"
+            continue
+          fi
+        fi
+      fi
+      break
+    done
+    # If loose bsp/ent/lit/loc files in top level, put them in their place.
+    # It is kind of weird for this to happen if there is a maps or locs
+    # directory already, but if so I guess we'll just move them there.
+    mapsfiles=$(ls -1d *.bsp *.ent *.lit 2>/dev/null)
+    if [[ -n "$mapsfiles" ]]
+    then
+      mapsdir=$(ls -1d [Mm]aps 2>/dev/null)
+      if [[ "$mapsdir" == "" ]]
+      then
+        mkdir maps
+        mapsdir=maps
+      else
+        if [[ $(echo "$mapsdir" | wc -l) -ne 1 ]]
+        then
+          rm -rf "$destdir"
+          message "archive contains multiple maps dirs"
+          exit 1
+        fi
+      fi
+      mv $mapsfiles $mapsdir
+    fi
+    locsfiles=$(ls -1d *.loc 2>/dev/null)
+    if [[ -n "$locsfiles" ]]
+    then
+      locsdir=$(ls -1d [Ll]ocs 2>/dev/null)
+      if [[ "$locsdir" == "" ]]
+      then
+        mkdir locs
+        locsdir=locs
+      else
+        if [[ $(echo "$locsdir" | wc -l) -ne 1 ]]
+        then
+          rm -rf "$destdir"
+          message "archive contains multiple locs dirs"
+          exit 1
+        fi
+      fi
+      mv $locsfiles $locsdir
+    fi
+    # Tidy up.
+    if [[ $cleanup_archive == "true" ]]
+    then
+      rm -f "$arg"
+    fi
+    # Fall through into the gamedir processing below.
+    arg="$destdir"
+  fi
+fi
+
+# Done with any file examination and archive processing. Now figure out how to
+# launch Quake.
+
+# At this point we'd like the argument to be a directory, presumably a gamedir.
+# We may have created this with the code above, or it may have been created
+# outside of this script.
+if [[ -d "$arg" ]]
+then
+  gamedir="$arg"
+  gamedirparent=$(dirname "$gamedir")
+  # Allow running gamedirs outside the normal basedir if it looks like a
+  # valid Quake install.
+  if [[ ! -d "$gamedirparent"/id1 ]]
+  then
+    message "target directory is not inside a Quake installation"
+    exit 1
+  fi
+  basedir="$gamedirparent"
+  mod=$(basename "$gamedir")
+  cd "$gamedir"
+  # Take care of any obvious capitalization gotchas.
+  if [[ $fix_capitalization == "true" ]]
+  then
+    recap_dirs
+    recap_files
+  fi
+  # See if we can figure out any required basegame from grepping docs.
+  if grep -qi -- "-quoth\|-game quoth" *.txt *.htm* readme* 2> /dev/null
+  then
+    if [[ -d "$basedir"/quoth ]]
+    then
+      basegame=-quoth
+    else
+      message "requires quoth basegame but quoth is not installed"
+      exit 1
+    fi
+  else
+    if grep -qi -- "-hipnotic\|-game hipnotic" *.txt *.htm* readme* 2> /dev/null
+    then
+      if [[ -d "$basedir"/hipnotic ]]
+      then
+        basegame=-hipnotic
+      else
+        message "requires hipnotic basegame but hipnotic is not installed"
+        exit 1
+      fi
+    else
+      if grep -qi -- "-rogue\|-game rogue" *.txt *.htm* readme* 2> /dev/null
+      then
+        if [[ -d "$basedir"/rogue ]]
+        then
+          basegame=-rogue
+        else
+          message "requires rogue basegame but rogue is not installed"
+          exit 1
+        fi
+      else
+        if [[ -n "$ad_basegame_args" ]] && grep -qi "arcane dimension" *.txt *.htm* readme*
+        then
+          if [[ $(is_standalone) == "false" ]]
+          then
+            if [[ -z "$ad_gamedir" || -d "$basedir"/"$ad_gamedir" ]]
+            then
+              basegame=$ad_basegame_args
+            else
+              message "requires $ad_gamedir basegame but $ad_gamedir is not installed"
+              exit 1
+            fi
+          fi
+        else
+          if [[ -n "$copper_basegame_args" ]] && grep -qi "copper" *.txt *.htm* readme*
+          then
+            if [[ $(is_standalone) == "false" ]]
+            then
+              if [[ -z "$copper_gamedir" || -d "$basedir"/"$copper_gamedir" ]]
+              then
+                basegame=$copper_basegame_args
+              else
+                message "requires $copper_gamedir basegame but $copper_gamedir is not installed"
+                exit 1
+              fi
+            fi
+          fi
+        fi
+      fi
+    fi
+  fi
+  # If there's a specific bsp targetted, launch it.
+  if [[ -n "$bsp" ]]
+  then
+    cd "$quakedir"
+    exec "$quake" -basedir "$basedir" $basegame -game "$mod" +map "${bsp%.*}"
+  fi
+  # If there are existing savegames, load the latest.
+  lastsave=$(ls -1dt *.sav 2>/dev/null | head -1)
+  if [[ -n "$lastsave" ]]
+  then
+    cd "$quakedir"
+    exec "$quake" -basedir "$basedir" $basegame -game "$mod" +load "${lastsave%.*}"
+  fi
+  # No savegames... maybe we can start a map.
+  # See if we can look for maps inside any pak files.
+  paks=$(ls -1d *.pak 2>/dev/null | tr '\n' ' ')
+  if [[ -n "$paks" ]]
+  then
+    # If the Python module expak is installed, use that to list maps inside
+    # the paks.
+    if [[ $expak_installed == "true" ]]
+    then
+      paklist=$(echo $paks | sed 's/ /", "/g' | sed 's/\(.*\)/"\1"/')
+      maplist=$(python -c "import expak;print(' '.join([r for r in expak.resource_names([$paklist]) if r.lower().startswith('maps/')]))" 2>/dev/null)
+      if [[ $? -ne 0 ]]
+      then
+        # Didn't work. Since expak is supposedly installed let's complain,
+        # but launch Quake anyway as if expak_installed were false.
+        message "expak_installed=true in quakelaunch.conf, but failed to use expak"
+        cd "$quakedir"
+        exec "$quake" -basedir "$basedir" $basegame -game "$mod"
+      fi
+    else
+      # There are paks but we can't see what maps might be in there. This
+      # hurts the maps-guessing below, so just launch with the mod activated.
+      cd "$quakedir"
+      exec "$quake" -basedir "$basedir" $basegame -game "$mod"
+    fi
+  fi
+  # Now look for loose bsp files and add those to our map list.
+  loosemaps=$(ls -1d maps/*.bsp 2>/dev/null | tr '\n' ' ')
+  if [[ -n "$loosemaps" ]]
+  then
+    maplist="$maplist $loosemaps"
+  fi
+  # Let's run some Quake!
+  cd "$quakedir"
+  # If there's only one map, that's our huckleberry.
+  if [[ $(echo "$maplist" | wc -w) -eq 1 ]]
+  then
+    singlemap=$(basename ${maplist%.*})
+    exec "$quake" -basedir "$basedir" $basegame -game "$mod" +map $singlemap
+  fi
+  # More than one map. Is there a start map? Use it if so.
+  if [[ "$maplist" =~ maps/start.bsp ]]
+  then
+    # Need to be careful to use the right capitalization.
+    startmap=$(echo "$maplist" | sed 's/.*maps\/\(start\)\.bsp.*/\1/I')
+    exec "$quake" -basedir "$basedir" $basegame -game "$mod" +map $startmap
+  fi
+  # It's possible there's some other map that ends in "start.bsp", like
+  # "acstart.bsp". Use THAT if it exists.
+  if [[ "$maplist" =~ start.bsp ]]
+  then
+    startmap=$(echo "$maplist" | sed 's/.*\/\([^ ]*start\)\.bsp.*/\1/I')
+    exec "$quake" -basedir "$basedir" $basegame -game "$mod" +map $startmap
+  fi
+  # Try excluding maps that appear to be bmodels, see if that leaves us with
+  # just one choice.
+  filtered=$(echo "$maplist" | sed 's/maps\/b_[^ ]*\.bsp//gI')
+  if [[ $(echo "$filtered" | wc -w) -eq 1 ]]
+  then
+    singlemap=$(basename ${filtered%.*})
+    exec "$quake" -basedir "$basedir" $basegame -game "$mod" +map $singlemap
+  fi
+  # There's some other heuristics we could use here buuuuut we risk skipping
+  # past the actual first map and causing confusion. So no more cleverness.
+  exec "$quake" -basedir "$basedir" $basegame -game "$mod"
+fi
+
+# If we got here, we couldn't figure out what to do.
+usage
+exit 1
