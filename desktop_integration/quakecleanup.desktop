@@ -11,4 +11,4 @@ Name[en_US]=Quake mod cleanup
 X-GNOME-FullName[en_US]=Quake mod cleanup
 Comment[en_US]=
 NoDisplay=true
-X-GNOME-UsesNotifications=false
+X-GNOME-UsesNotifications=true

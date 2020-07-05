@@ -13,4 +13,4 @@ Name[en_US]=Quake
 X-GNOME-FullName[en_US]=Quake
 Comment[en_US]=
 NoDisplay=false
-X-GNOME-UsesNotifications=false
+X-GNOME-UsesNotifications=true

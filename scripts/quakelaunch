@@ -21,7 +21,7 @@ function message {
   echo $1
   if [[ -n "$notification_icon" ]]
   then
-    notify-send --icon="$notification_icon" "$1"
+    notify-send --icon="$notification_icon" "$1" --hint=string:desktop-entry:quake
   fi
   beep
 }
