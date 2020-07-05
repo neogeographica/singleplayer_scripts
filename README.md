@@ -1,10 +1,25 @@
 # What?
 
-These files are some of the custom bits of my singleplayer Quake setup on Linux. The goal is to use integration with the Linux desktop to quickly handle common stuff I do with Quake custom singleplayer content: install, start play, resume play from savegame, and uninstall.
+This repo shares some ways that I've customized my singleplayer Quake setup on Linux. My goal is to use integration with the Linux desktop to quickly handle common stuff I do with Quake custom singleplayer content: install, start play, resume play from savegame, and uninstall.
 
-I currently use a variant of Ubuntu called elementary OS, so these files should work on Ubuntu, elementary OS, or other Ubuntu variants. If not (or if they can also be tweaked to be compatible with other Linux flavors) then pull requests to improve them are welcome.
+<p align="center">
+<b>Automatically install and launch a downloaded zip of a Quake mod or maps</b><br/>
+<img src="install.gif">
+</p>
 
-This is currently my favorite way to play custom singleplayer Quake stuff!
+<p align="center">
+<b>Double-click shortcut to launch a gamedir and resume at most recent savegame</b><br/>
+<img src="shortcut.gif">
+</p>
+
+<p align="center">
+<b>Remove a shortcut and auto-delete the associated gamedir</b><br/>
+<img src="cleanup.gif">
+</p>
+
+Folks keep releasing a stream of new stuff so I needed to reduce the friction involved in keeping up with it!
+
+I currently use a variant of Ubuntu called elementary OS. So these files and commands should work on Ubuntu, elementary OS, or other Ubuntu variants. If not (or if they can also be tweaked to be compatible with other Linux flavors) then pull requests to improve them are welcome.
 
 # Features
 
@@ -17,7 +32,7 @@ Right-click on an archive (zip or rar or many other kinds) and select "Open with
 Right-click on a gamedir in your Quake directory and select "Open with Quake".
 * Common capitalization errors that break Linux play will be fixed.
 * If there are savegames, the gamedir will be activated in Quake and its most recent savegame loaded.
-* If no savegames, the gamedir will be activated in Quake and a best guess at its start map (or only map) will be loaded.
+* If no savegames, the gamedir will be activated in Quake and its start map (or only map) will be loaded.
 
 ## Optional ".quake" shortcuts for launching gamedirs
 
@@ -25,11 +40,11 @@ Double-click on a ".quake" file to launch the related gamedir as above. E.g. dou
 
 ## Launching Quake to play a specific bsp
 
-Double-click on a bsp file (in some maps directory within a gamedir). The gamedir will be activated in Quake as above, with the difference that this bsp will be the one loaded as opposed to some startmap or savegame.
+Double-click on a bsp file (in some maps directory within a gamedir). The gamedir will be activated in Quake as above, with the difference that the selected bsp will be what is loaded as opposed to some startmap or savegame.
 
 ## Uninstalling a gamedir
 
-(This is only helpful if you use ".quake" shortcuts.) Right-click on a gamedir and choose to open it with "Quake mod cleanup". The gamedir and any .quake shortcut to it will be deleted. Similarly you can do this on a .quake shortcut, to delete both the shortcut and the gamedir it points to.
+(This is only helpful if you use ".quake" shortcuts.) Right-click on a gamedir and choose to open it with "Quake mod cleanup". The gamedir and any ".quake" shortcut to it will be deleted. Similarly you can do this on a ".quake" shortcut, to delete both the shortcut and the gamedir it points to.
 
 # Caveats
 
@@ -41,7 +56,7 @@ To evangelize briefly: Keeping each release in its own gamedir lets me see at a 
 
 ## Some assembly required
 
-If you want to adopt these files to your own setup, you'll have to put some files into the right directories, edit some files to set your options and paths, and run some commands. There's no slick installer.
+If you want to adopt these files to your own setup, you'll have to edit some files to set your options and paths, copy some files, and run some commands. There's no slick installer.
 
 ## Read the README for the content you want to play
 
@@ -49,7 +64,7 @@ The main script here is meant to deal with the common things that I would otherw
 
 If installing a release correctly requires unusual steps like also downloading and merging additional patches, this script won't do that for you.
 
-If running a release correctly requires unusual command-line arguments, this script won't do that for you.
+If running a release correctly requires unusual command-line arguments for Quake, this script won't do that for you.
 
 If running a release correctly requires a basegame like Quoth or a missionpack, this script won't install that dependency for you if it's missing (but it should catch that error). Also, if the release requires a basegame that is *not* mentioned in a doc/readme included in the release, this script won't figure out that it needs that basegame.
 
@@ -57,9 +72,9 @@ Basically... be familiar with how the script works (described in [scripts/README
 
 ## This can't fix everything
 
-One of the bullet points above was "Common capitalization errors that break Linux play will be fixed." The gist of this is that the script will fix problems related to common assumptions that the Quake engine itself makes about how things like directory names and file extensions are capitalized. So for example if there's a map named "FOO.BSP" the script will rename it to "FOO.bsp" so that it can be loaded properly in Linux.
+One of the bullet points above was "Common capitalization errors that break Linux play will be fixed." The gist of this is that the script will fix problems related to common assumptions that the Quake engine makes about how things like directory names and file extensions are capitalized. So for example if there's a map named "FOO.BSP" the script will rename it to "FOO.bsp" so that it can be loaded properly in Linux.
 
-What the script can't do -- or at least doesn't, currently -- is find and fix problems related to how things are capitalized within the new content that you downloaded. So if a map in some new episode you downloaded has an exit portal that leads to "Map2.bsp" while the actual next map is called "map2.bsp", that will not work.
+What the script can't do -- or at least doesn't do, currently -- is find and fix problems related to how things are capitalized within the new content that you downloaded. So if a map in some new episode you downloaded has an exit portal that leads to "Map2.bsp" while the actual next map is in a loose bsp file named "map2.bsp", that won't work and the script won't fix it.
 
 You can find the latter sorts of issues through paying attention to errors printed in the console when a map starts up or when something like that exit portal doesn't work. You can then figure out how to fix the problems yourself by renaming files/directories or creating symbolic links, if it's worth fixing.
 
@@ -79,5 +94,5 @@ Then you can hook up those behaviors to right-click and double-click actions in 
 
 Feel free to open a GitHub issue, or contact me in other ways if you are in a Discord channel with me etc. Things I would be interested in hearing about include:
 * Straight-up bugs. I.e. it doesn't work for you on Ubuntu.
-* Suggested ways to adapt the script to support other Linux flavors (or even UNIX, BSD, or macOS).
+* Suggested ways to adapt the scripts and desktop integration to support other Linux flavors (or even UNIX, BSD, or macOS).
 * Specific singleplayer releases that the script handles poorly, either in installation or launching.
