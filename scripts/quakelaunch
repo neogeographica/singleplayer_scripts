@@ -179,7 +179,7 @@ then
     if [[ -z "$ad_basegame_args" ]]
     then
       # Also match singular "Arcane Dimension" since some folks call it that.
-      ad_found=$(find . -type f \( -iname '*.txt' -o -iname '*.htm*' -o -iname 'readme*' \) -exec grep -i "arcane dimension" {} \;)
+      ad_found=$(find . -type f \( -iname '*.txt' -o -iname '*.htm*' -o -iname '*readme*' \) -exec grep -i "arcane dimension" {} \;)
       if [[ -n "$ad_found" && $(is_standalone) == "false" ]]
       then
         rm -rf "$tmpdir"
@@ -189,7 +189,7 @@ then
     fi
     if [[ -z "$copper_basegame_args" ]]
     then
-      copper_found=$(find . -type f \( -iname '*.txt' -o -iname '*.htm*' -o -iname 'readme*' \) -exec grep -i copper {} \;)
+      copper_found=$(find . -type f \( -iname '*.txt' -o -iname '*.htm*' -o -iname '*readme*' \) -exec grep -i copper {} \;)
       if [[ -n "$copper_found" && $(is_standalone) == "false" ]]
       then
         rm -rf "$tmpdir"
@@ -258,7 +258,7 @@ then
       # If (other than docs) there is only one file here, and its a
       # subdirectory, and it's not a known Quake content directory... it's
       # probably packaging cruft. Move its contents up and keep looping.
-      stuffhere=$(ls -1 --ignore=*.txt --ignore=*.htm* --ignore=readme*)
+      stuffhere=$(ls -1 --ignore=*.txt --ignore=*.htm* --ignore=*readme*)
       if [[ $(echo "$stuffhere" | wc -l) -eq 1 ]]
       then
         if [[ -d "$stuffhere" ]]
@@ -356,7 +356,7 @@ then
     recap_files
   fi
   # See if we can figure out any required basegame from grepping docs.
-  if grep -qi -- "-quoth\|-game quoth" *.txt *.htm* readme* 2> /dev/null
+  if grep -qi -- "-quoth\|-game quoth" *.txt *.htm* *readme* 2> /dev/null
   then
     if [[ -d "$basedir"/quoth ]]
     then
@@ -366,7 +366,7 @@ then
       exit 1
     fi
   else
-    if grep -qi -- "-hipnotic\|-game hipnotic" *.txt *.htm* readme* 2> /dev/null
+    if grep -qi -- "-hipnotic\|-game hipnotic" *.txt *.htm* *readme* 2> /dev/null
     then
       if [[ -d "$basedir"/hipnotic ]]
       then
@@ -376,7 +376,7 @@ then
         exit 1
       fi
     else
-      if grep -qi -- "-rogue\|-game rogue" *.txt *.htm* readme* 2> /dev/null
+      if grep -qi -- "-rogue\|-game rogue" *.txt *.htm* *readme* 2> /dev/null
       then
         if [[ -d "$basedir"/rogue ]]
         then
@@ -386,7 +386,7 @@ then
           exit 1
         fi
       else
-        if [[ -n "$ad_basegame_args" ]] && grep -qi "arcane dimension" *.txt *.htm* readme*
+        if [[ -n "$ad_basegame_args" ]] && grep -qi "arcane dimension" *.txt *.htm* *readme*
         then
           if [[ $(is_standalone) == "false" ]]
           then
@@ -399,7 +399,7 @@ then
             fi
           fi
         else
-          if [[ -n "$copper_basegame_args" ]] && grep -qi "copper" *.txt *.htm* readme*
+          if [[ -n "$copper_basegame_args" ]] && grep -qi "copper" *.txt *.htm* *readme*
           then
             if [[ $(is_standalone) == "false" ]]
             then
