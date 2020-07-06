@@ -46,6 +46,10 @@ Double-click on a bsp file (in some maps directory within a gamedir). The gamedi
 
 (This is only helpful if you use ".quake" shortcuts.) Right-click on a gamedir and choose to open it with "Quake mod cleanup". The gamedir and any ".quake" shortcut to it will be deleted. Similarly you can do this on a ".quake" shortcut, to delete both the shortcut and the gamedir it points to.
 
+## Optional "mapjam helper"
+
+For a smoother trip through a mapjam or speedmap pack: an in-game keybind to load the next map that you haven't played yet.
+
 # Caveats
 
 ## Installation is opinionated

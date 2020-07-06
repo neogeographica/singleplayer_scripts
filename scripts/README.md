@@ -113,6 +113,18 @@ If you try to launch a non-standalone gamedir that mentions Arcane Dimensions or
 * If you're set up to handle AD/Copper as a "basegame", the gamedir will be launched accordingly.
 * Otherwise the gamedir will be launched normally without specifying any basegame. The script assumes you know what you're doing! (This might change in future releases.)
 
+## Mapjam helper
+
+Some packs of maps don't include a custom start map; or maybe they do, but it's just a giant collection of slipgates and it's annoying to keep track of where you've already been. In these cases I usually just want to play through the maps in some order, so I would use the Quake console to get a list of maps and manually load the next map.
+
+This script provides an optional helper to make that process a bit nicer. If you define a value for jam_keybind in "quakelaunch.conf", that key will be bound to an alias that will load the "next map" in a list of maps from the gamedir. So when you first load up the map pack, press that key to be taken to the first non-startmap map in the pack. Or if you're just in the Quake console rather than in a map, you can enter the "jam" command in the console.
+
+When you're done with that first map (either before or after you go through its exit portal), press the key again to go to the next map. Etc. If you've played through the whole list then pressing the key will just print the message "All Done!" in the upper-left-hand corner of the screen.
+
+If you make a savegame and then come back later to pick up where you left off, using the autoload-latest-savegame feature, the mapjam helper will be set up correctly so that it starts at your current spot in the map list. The same is true if you use the launch-from-bsp feature to directly load a specific map.
+
+Note that the config-scripting for this behavior doesn't have any magic way to know what map you are currently on; it just starts on a particular map and then works through a list as you press the key repeatedly. So if you manually load a different map or savegame after launching Quake you will not change its idea of what the "next map" is.
+
 # Testing
 
 If you want to test whether you've installed the expak module correctly, cd into your id1 directory and execute the following command. (Long line here, be sure to copy it all.)
