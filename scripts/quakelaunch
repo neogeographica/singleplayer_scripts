@@ -360,10 +360,10 @@ then
       fi
       break
     done
-    # If loose bsp/ent/lit/loc files in top level, put them in their place.
-    # It is kind of weird for this to happen if there is a maps or locs
-    # directory already, but if so I guess we'll just move them there.
-    mapsfiles=$(ls -1d *.bsp *.ent *.lit 2>/dev/null)
+    # If there are loose bsp/ent/lit/loc/map files in top level, put them in
+    # their place. It is kind of weird for this to happen if there is a maps
+    # or locs directory already, but if so I guess we'll just move them there.
+    mapsfiles=$(ls -1d *.bsp *.ent *.lit *.map 2>/dev/null)
     if [[ -n "$mapsfiles" ]]
     then
       mapsdir=$(ls -1d [Mm]aps 2>/dev/null)
