@@ -50,6 +50,16 @@ If you will be using ".quake" shortcuts (see below), it is nice to have an autom
 
 # Usage notes
 
+The scripts are meant to be used through desktop integration, but you can also run them manually. Each script can take one argument.
+
+"quakelaunch" with zero arguments will just launch Quake.
+
+"quakelaunch" with one argument represents what will happen when you use the desktop integration to "open a file" for "Quake". The argument to "quakelaunch" can be a zip archive, some other kind of archive, a Quake gamedir, a ".quake" shortcut, or a bsp file inside the maps directory of a gamedir. This will trigger the various features/behaviors described in the top-level readme.
+
+"quakecleanup" with one argument represents what will happen when you use the desktop integration to "open a file" for "Quake mod cleanup". The argument to "quakecleanup" can be a Quake gamedir or a ".quake" shortcut. It will delete a gamedir and its associated shortcut(s).
+
+The sections below cover some of the interesting parts of these behaviors that can affect how you want to set up the "quakelaunch.conf" config file, and how you will use the features once they are installed.
+
 ## Shortcuts
 
 A shortcut is a file with the ".quake" extension. They're nice as a way to launch a Quake mod or maps with a double-click (once you've done the desktop integration). A directory full of shortcuts is basically your menu of Quake stuff you can play.
@@ -136,7 +146,7 @@ You should see this output:
 
 There's no need to check that that is the exact list you get, the idea is just that you should be shown a long list of bsp files rather than some Python error.
 
-Next, you can test the scripts from the shell command line. The scripts are meant to be used through desktop integration, but you can also run them manually.
+Next, you can test the scripts from the shell command line.
 
 Give the "quakelaunch" script one argument that is a path to a bsp file within an existing Quake gamedir. It should launch Quake with that gamedir activated and that bsp file loaded.
 
