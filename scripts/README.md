@@ -117,7 +117,7 @@ If you try to launch a non-standalone gamedir that mentions Arcane Dimensions or
 
 Some packs of maps don't include a custom start map; or maybe they do, but it's just a giant collection of slipgates and it's annoying to keep track of where you've already been. In these cases I usually just want to play through the maps in some order, so I would use the Quake console to get a list of maps and manually load the next map.
 
-This script provides an optional helper to make that process a bit nicer. If you define a value for jam_keybind in "quakelaunch.conf", that key will be bound to an alias that will load the "next map" in a list of maps from the gamedir. So when you first load up the map pack, press that key to be taken to the first non-startmap map in the pack. Or if you're just in the Quake console rather than in a map, you can enter the "jam" command in the console.
+This script provides an optional helper to make that process a bit nicer. If you define a value for jam_keybind in "quakelaunch.conf", that key will be bound to an alias that will load the "next map" in a list of maps from the gamedir. So when you first load up the map pack, press that key to be taken to the first non-startmap map in the pack. Or if you're just in the Quake console rather than in a startmap, you can enter the "jam" command in the console.
 
 When you're done with that first map (either before or after you go through its exit portal), press the key again to go to the next map. Etc. If you've played through the whole list then pressing the key will just print the message "All Done!" in the upper-left-hand corner of the screen.
 

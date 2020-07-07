@@ -124,7 +124,7 @@ If you right-click a file with the ".quake" extension it should show as "applica
 
 If you installed an icon for the x-quake type, then any ".quake" shortcut file should display that icon.
 
-"Quake" should appear in your desktop applications launcher, in the "Games" category. You should be able to launch it and Quake will start up normally.
+"Quake" should appear in your desktop applications launcher, in the "Games" category. You should be able to launch it from that UI and Quake will start up normally.
 
 If that all works so far, you can try out the various right-click and double-click behaviors described in the usage notes above, for the filetypes and applications that you decided to install.
 

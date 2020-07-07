@@ -1,6 +1,8 @@
 # What?
 
-This repo shares some ways that I've customized my singleplayer Quake setup on Linux. My goal is to use integration with the Linux desktop to quickly handle common stuff I do with Quake custom singleplayer content: install, start play, resume play from savegame, and uninstall.
+New custom Quake singleplayer releases appear pretty frequently on places like [func_msgboard](http://www.celephais.net/board/forum.php) and the Quake Mapping Discord server. It would be nice to have a low-friction way to swim in this river of content -- especially since many of the releases are collections of small maps, any time spent fiddling with files or in the Quake console seems like too much useless overhead.
+
+This repo shares some ways that I've customized my singleplayer Quake setup on Linux to tackle that idea. The goal is to use desktop integration to quickly handle common stuff I do with Quake singleplayer releases: install, start play, resume play from savegame, hop between maps in a mapjam/speedmap pack, and uninstall.
 
 <p align="center">
 <b>Automatically install and launch a downloaded zip of a Quake mod or maps</b><br/>
@@ -16,8 +18,6 @@ This repo shares some ways that I've customized my singleplayer Quake setup on L
 <b>Remove a shortcut and auto-delete the associated gamedir</b><br/>
 <img src="cleanup.gif">
 </p>
-
-Folks keep releasing a stream of new stuff so I needed to reduce the friction involved in keeping up with it!
 
 I currently use a variant of Ubuntu called elementary OS. So these files and commands should work on Ubuntu, elementary OS, or other Ubuntu variants. If not (or if they can also be tweaked to be compatible with other Linux flavors) then pull requests to improve them are welcome.
 
@@ -42,13 +42,13 @@ Double-click on a ".quake" file to launch the related gamedir as above. E.g. dou
 
 Double-click on a bsp file (in some maps directory within a gamedir). The gamedir will be activated in Quake as above, with the difference that the selected bsp will be what is loaded as opposed to some startmap or savegame.
 
-## Uninstalling a gamedir
-
-(This is only helpful if you use ".quake" shortcuts.) Right-click on a gamedir and choose to open it with "Quake mod cleanup". The gamedir and any ".quake" shortcut to it will be deleted. Similarly you can do this on a ".quake" shortcut, to delete both the shortcut and the gamedir it points to.
-
 ## Optional "mapjam helper"
 
 For a smoother trip through a mapjam or speedmap pack: an in-game keybind to load the next map that you haven't played yet.
+
+## Uninstalling a gamedir
+
+(This is only helpful if you use ".quake" shortcuts.) Right-click on a gamedir and choose to open it with "Quake mod cleanup". The gamedir and any ".quake" shortcut to it will be deleted. Similarly you can do this on a ".quake" shortcut, to delete both the shortcut and the gamedir it points to.
 
 # Caveats
 
@@ -78,7 +78,7 @@ Basically... be familiar with how the script works (described in [scripts/README
 
 One of the bullet points above was "Common capitalization errors that break Linux play will be fixed." The gist of this is that the script will fix problems related to common assumptions that the Quake engine makes about how things like directory names and file extensions are capitalized. So for example if there's a map named "FOO.BSP" the script will rename it to "FOO.bsp" so that it can be loaded properly in Linux.
 
-What the script can't do -- or at least doesn't do, currently -- is find and fix problems related to how things are capitalized within the new content that you downloaded. So if a map in some new episode you downloaded has an exit portal that leads to "Map2.bsp" while the actual next map is in a loose bsp file named "map2.bsp", that won't work and the script won't fix it.
+What the script can't do -- or at least doesn't do, currently -- is find and fix problems related to how references to files are capitalized within the new content that you downloaded. So if a map in some new episode you downloaded has an exit portal that leads to "Map2.bsp" while the actual next map is in a loose bsp file named "map2.bsp", that won't work and the script won't fix it.
 
 You can find the latter sorts of issues through paying attention to errors printed in the console when a map starts up or when something like that exit portal doesn't work. You can then figure out how to fix the problems yourself by renaming files/directories or creating symbolic links, if it's worth fixing.
 
