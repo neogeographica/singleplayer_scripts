@@ -8,9 +8,9 @@ shopt -s extglob
 
 # Choose from a random set of error beeps and play it.
 function beep {
-  if [[ ${#beepsound[@]} -ne 0 ]]
+  if [[ -n "$beep_player" && ${#beepsound[@]} -ne 0 ]]
   then
-    paplay ${beepsound[$RANDOM % ${#beepsound[@]}]}
+    "$beep_player" ${beepsound[$RANDOM % ${#beepsound[@]}]}
   fi
 }
 
