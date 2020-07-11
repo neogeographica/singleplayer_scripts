@@ -28,9 +28,9 @@ If you can't or don't want to install these things globally, there are various w
 
 ## Configuration
 
-**3. Put the error sounds somewhere**
+**3. Put the error sounds somewhere safe**
 
-The "sounds" directory contains a selection of error beeps. If you want to use these sounds, copy them to a location of your choice, where they will not get deleted. Or find some other sounds you want to use.
+The "sounds" directory contains a selection of error beeps. If you want to use these sounds, make sure they are placed in a location where they will not get deleted. (Leaving them here among the files you downloaded for this repo is fine, if you're going to keep them intact.) Or find some other sounds you want to use.
 
 **4. Edit "quakelaunch.conf"**
 
@@ -38,9 +38,9 @@ Now open "quakelaunch.conf" in a text editor, read through it, and modify it as 
 
 ## Installation
 
-**5. Put "quakelaunch" and "quakelaunch.conf" on your PATH**
+**5. Put "quakelaunch" and "quakelaunch.conf" somewhere safe**
 
-The "quakelaunch" script must be placed somewhere in your executable path and marked executable. I personally have this in my own "\~/bin" directory since that's in my executable path.
+The "quakelaunch" script must be placed somewhere that it will not get deleted. Make sure that it is marked as executable.
 
 Your edited "quakelaunch.conf" file needs to be placed in the same location as the "quakelaunch" script.
 
