@@ -1,0 +1,33 @@
+{
+    "name": "Open with Quake",
+    "description": "Download an archive for opening with the Quake app.",
+    "author": "Joel Baxter",
+    "homepage_url": "http://neogeographica.com/",
+    "version": "1.0",
+    "manifest_version": 2,
+    "icons": {
+      "16": "icons/quake-icon-16.png",
+      "24": "icons/quake-icon-24.png",
+      "32": "icons/quake-icon-32.png",
+      "48": "icons/quake-icon-48.png",
+      "128": "icons/quake-icon-128.png"
+    },
+    "browser_action": {
+      "default_icon": {
+        "16": "icons/quake-icon-16.png",
+        "24": "icons/quake-icon-24.png",
+        "32": "icons/quake-icon-32.png",
+        "48": "icons/quake-icon-48.png"
+      },
+      "default_title": "will show progress of Open with Quake"
+    },
+    "background": { 
+      "scripts": ["background.js"],
+      "persistent": false
+    },
+    "permissions": [
+      "contextMenus",
+      "downloads",
+      "<all_urls>"
+    ]
+}

@@ -239,6 +239,23 @@ then
     arg=$(dirname "$mapsdir")
   else
     # Not a bsp. Let's see if we can open it as an archive.
+    # First check for a qz extension. That is used to force default opening
+    # of an archive with this script. If there's a qz extension we should
+    # strip it and then proceed as normal.
+    if [[ "${arg##*.}" =~ ^qz$ ]]
+    then
+      newarg="${arg%.*}"
+      mv "$arg" "$newarg"
+      if [[ $? -eq 0 ]]
+      then
+        arg="$newarg"
+      else
+        # This isn't necessarily a problem; it looks like aunpack doesn't
+        # (usually?) depend on what the file extension is. So just keep going.
+        # Send a warning notification tho.
+        message "unable to rename .qz file, but trying to open it anyway"
+      fi
+    fi
     tmpdir=$(mktemp -d)
     aunpack -qX "$tmpdir" "$arg"
     if [[ $? -ne 0 ]]

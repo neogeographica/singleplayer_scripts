@@ -19,6 +19,11 @@ This repo shares some ways that I've customized my singleplayer Quake setup on L
 <img src="cleanup.gif">
 </p>
 
+<p align="center">
+<b>Optional Chrome browser integration</b><br/>
+<img src="browser.gif">
+</p>
+
 I currently use a variant of Ubuntu called elementary OS. So these files and commands should work on Ubuntu, elementary OS, or other Ubuntu variants. If not (or if they can also be tweaked to be compatible with other Linux flavors) then pull requests to improve them are welcome.
 
 # Features
@@ -49,6 +54,10 @@ For a smoother trip through a mapjam or speedmap pack: an in-game keybind to loa
 ## Uninstalling a gamedir
 
 (This is only helpful if you use ".quake" shortcuts.) Right-click on a gamedir and choose to open it with "Quake mod cleanup". The gamedir and any ".quake" shortcut to it will be deleted. Similarly you can do this on a ".quake" shortcut, to delete both the shortcut and the gamedir it points to.
+
+## Optional Chrome browser integration
+
+Right-click on a download link in a webpage and select "Open with Quake"; same features as described above for archive files.
 
 # Caveats
 
@@ -93,6 +102,10 @@ The first things to set up are the scripts that implement the behaviors mentione
 ## Desktop integration
 
 Then you can hook up those behaviors to right-click and double-click actions in the desktop. See [desktop_integration/README.md](desktop_integration/README.md).
+
+## Browser integration
+
+It's certainly not required, but if you want to enable the "Open with Quake" behavior in Chrome then see [browser_integration/README.md](browser_integration/README.md).
 
 # Reporting issues
 
