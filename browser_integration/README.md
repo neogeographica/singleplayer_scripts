@@ -4,7 +4,7 @@ These are the files necessary to set up Chrome to auto-install-and-run a Quake m
 
 Because of the limitations on Chrome extensions, we can't quite implement a feature that would do "download this file and then open it with the desired app". What we *can* do is make Chrome put a special file extension ".qz" on the downloaded file, and we can associate ".qz" with our Quake app. Then once the file is downloaded you can click to open it from the Chrome downloads shelf, or even set Chrome to auto-open all ".qz" files when downloaded. This will give you the browser-integration behavior described in the [top-level readme](../README.md).
 
-Keep in mind that for non-standalone Arcane Dimensions and Copper releases, this feature requires a Quake engine like FTE that supports specifying a "basegame" for a mod or maps. (See the "Arcane Dimensions and Copper" section of the [scripts readme](../scripts/README.md) for more details.) If you're in this situation, then "Open with Quake" will just result in a desktop notification about not being able to auto-install, and you'll have to manually install the downloaded archive of AD or Copper stuff.
+Keep in mind that for non-standalone Arcane Dimensions and Copper releases, this feature requires a Quake engine like FTE that supports specifying a "basegame" for a mod or maps. (See the "Arcane Dimensions and Copper" section of the [scripts readme](../scripts/README.md) for more details.) If you don't have that capablity, and you try to do "Open with Quake" on a browser link to such an AD/Copper release, then after the download you'll get a desktop notification that it can't auto-install &mdash; you'll have to manually install the contents of the downloaded archive yourself.
 
 # Setup
 
