@@ -117,7 +117,7 @@ Most Quake engines don't support that though. I've modified my own build of Quak
 
 So if you try to install a non-standalone Arcane Dimensions or Copper release, different things will happen based on your configuration:
 * If you're set up (in "quakelaunch.conf") to handle AD/Copper as a "basegame", the content will be installed in its own gamedir and launched accordingly.
-* Otherwise, the script will exit without doing the installation. You'll need to install the content manually, by file merging or whatever works for you.
+* Otherwise, the script will exit without doing the installation, generating a desktop notification that tells you why it couldn't auto-install. You'll need to install the content manually, by merging files into the main AD/Copper mod directory or whatever you would normally do.
 
 If you try to launch a non-standalone gamedir that mentions Arcane Dimensions or Copper in its docs:
 * If you're set up to handle AD/Copper as a "basegame", the gamedir will be launched accordingly.

@@ -4,6 +4,8 @@ These are the files necessary to set up Chrome to auto-install-and-run a Quake m
 
 Because of the limitations on Chrome extensions, we can't quite implement a feature that would do "download this file and then open it with the desired app". What we *can* do is make Chrome put a special file extension ".qz" on the downloaded file, and we can associate ".qz" with our Quake app. Then once the file is downloaded you can click to open it from the Chrome downloads shelf, or even set Chrome to auto-open all ".qz" files when downloaded. This will give you the browser-integration behavior described in the [top-level readme](../README.md).
 
+Keep in mind that for non-standalone Arcane Dimensions and Copper releases, this feature requires a Quake engine like FTE that supports specifying a "basegame" for a mod or maps. (See the "Arcane Dimensions and Copper" section of the [scripts readme](../scripts/README.md) for more details.) If you're in this situation, then "Open with Quake" will just result in a desktop notification about not being able to auto-install, and you'll have to manually install the downloaded archive of AD or Copper stuff.
+
 # Setup
 
 If you have already done the [desktop integration](../desktop_integration/README.md), great! If not go do that first.
@@ -75,6 +77,8 @@ Keep in mind what the extension is actually doing: downloading the file in a way
 You can only have one "Open with Quake" operation active at a time. The context menu item will be disabled while it is working on a request.
 
 If any error happens during download, a red badge will be shown on the "Open with Quake" extension icon for 5 seconds (or until you try "Open with Quake" again). If the error was an unexpected status code, that code will be shown in the badge, like "404" for file-not-found. If some other weird problem, then the badge will just say "err". (If you are already accustomed to debugging extension behavior you can find some other error info logged to the extension's background page.)
+
+If an error happens during the attempt to auto-install, or if you have cleanup_archive set to false in your quakelaunch.conf, then the downloaded archive file *without* the added ".qz" extension will be left in your Chrome downloads directory.
 
 Finally note that the Chrome extension will never be automatically updated in your browser. If any changes are made to the extension in this git repo, you'll need to download those changed files and then reload the extension (using the circular-arrow "reload me" button on the "Open with Quake" tile in the extensions manager).
 

@@ -65,7 +65,9 @@ Right-click on a download link in a webpage and select "Open with Quake"; same f
 
 I like to put any Quake map release into its own gamedir, even vanilla bsp-only releases that could just be dropped into id1/maps. So that's the arrangement that the main script here builds and works with. If you don't like to do things that way then there's probably not much here of interest.
 
-To evangelize briefly: Keeping each release in its own gamedir lets me see at a glance what I've currently installed, makes it obvious which savegames and bits of configuration are relevant to which releases, makes "uninstallation" braindead-simple, and also makes it possible to do some automated installation and launching with a pretty lightweight script.
+> To evangelize briefly: Keeping each release in its own gamedir lets me see at a glance what I've currently installed, makes it obvious which savegames and bits of configuration are relevant to which releases, makes "uninstallation" braindead-simple, and also makes it possible to do some automated installation and launching with a pretty lightweight script.
+
+One consequence of this approach is that the auto-install feature *will not work* for non-standalone Arcane Dimensions and Copper releases, *unless* you are using a Quake engine like FTE that supports specifying a "basegame" for a mod or maps. See the "Arcane Dimensions and Copper" section of [scripts/README.md](scripts/README.md) for more details.
 
 ## Some assembly required
 
