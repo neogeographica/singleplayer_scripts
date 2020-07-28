@@ -67,7 +67,7 @@ I like to put any Quake map release into its own gamedir, even vanilla bsp-only 
 
 > To evangelize briefly: Keeping each release in its own gamedir lets me see at a glance what I've currently installed, makes it obvious which savegames and bits of configuration are relevant to which releases, makes "uninstallation" braindead-simple, and also makes it possible to do some automated installation and launching with a pretty lightweight script.
 
-One consequence of this approach is that the auto-install feature *will not work* for non-standalone Arcane Dimensions and Copper releases, *unless* you are using a Quake engine like FTE that supports specifying a "basegame" for a mod or maps. See the "Arcane Dimensions and Copper" section of [scripts/README.md](scripts/README.md) for more details.
+One consequence of this approach is that the auto-install feature *will not work* for non-standalone Arcane Dimensions and Copper releases, *unless* you are using a Quake engine like [FTE](http://fte.triptohell.info/) or [Quakespasm-Spiked](http://triptohell.info/moodles/qss/) that supports specifying a "basegame" or multiple "game" directories to use when loading a mod or maps. See the "Arcane Dimensions and Copper" section of [scripts/README.md](scripts/README.md) for more details.
 
 ## Some assembly required
 

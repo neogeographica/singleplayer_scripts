@@ -111,9 +111,7 @@ Some custom singleplayer releases make use of Arcane Dimensions or Copper, eithe
 
 A "standalone" release is detected if it has a progs.dat or any pak files. If this is the case then it will be installed and launched like any other mod, in its own gamedir.
 
-For a non-standalone release it's a little more complicated. As described in the top-level readme I like to keep each release in its own gamedir. Ideally I would want to put the new stuff in its own gamedir and use Arcane Dimensions or Copper as a "basegame" that it can work with... same as I do with content based on Quoth or the missionpacks.
-
-Most Quake engines don't support that though. I've modified my own build of Quakespasm to do it, and FTE can do it as shown in some examples in the conf file. If you have a Quake engine that can do it, you can set the relevant options in your "quakelaunch.conf" file.
+For a non-standalone release it's a little more complicated. As described in the top-level readme I like to keep each release in its own gamedir. Ideally I would want to put the new stuff in its own gamedir and use Arcane Dimensions or Copper as a base game directory that the new gamedir can build on... same as I do with content built for Quoth or the missionpacks. Many Quake engines don't have that feature, but I do know that [FTE](http://fte.triptohell.info/) and [Quakespasm-Spiked](http://triptohell.info/moodles/qss/) can do it, and I've included examples in the conf file that would work with those two engines. If you have a Quake engine that can do it, you can set the relevant options in your "quakelaunch.conf" file.
 
 So if you try to install a non-standalone Arcane Dimensions or Copper release, different things will happen based on your configuration:
 * If you're set up (in "quakelaunch.conf") to handle AD/Copper as a "basegame", the content will be installed in its own gamedir and launched accordingly.
