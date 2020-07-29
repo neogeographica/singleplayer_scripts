@@ -355,7 +355,7 @@ then
       # If (other than docs) there is only one file here, and its a
       # subdirectory, and it's not a known Quake content directory... it's
       # probably packaging cruft. Move its contents up and keep looping.
-      stuffhere=$(ls -1 --ignore=*.txt --ignore=*.htm* --ignore=*readme*)
+      stuffhere=$(ls -1 --ignore=*.txt --ignore=*.htm* --ignore=*.doc --ignore=*readme*)
       if [[ $(echo "$stuffhere" | wc -l) -eq 1 ]]
       then
         if [[ -d "$stuffhere" ]]
