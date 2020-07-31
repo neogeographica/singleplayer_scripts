@@ -121,6 +121,8 @@ If you try to launch a non-standalone gamedir that mentions Arcane Dimensions or
 * If you're set up to handle AD/Copper as a "basegame", the gamedir will be launched accordingly.
 * Otherwise the gamedir will be launched normally without specifying any basegame. The script assumes you know what you're doing! (This might change in future releases.)
 
+Note that because the script just looks for occurences of "Arcane Dimensions" or "Copper" in the readme files, if the readme says something like "built for vanilla id1 but also tested with Copper" then the gamedir will get launched with Copper. I haven't found this to be a real problem yet (and I like Copper anyway) &mdash; but if something like this does happen, and you want to force the script to launch the gamedir in id1, then you can edit the readme to remove the offending reference.
+
 ## Mapjam helper
 
 Some packs of maps don't include a custom start map; or maybe they do, but it's just a giant collection of slipgates and it's annoying to keep track of where you've already been. In these cases I usually just want to play through the maps in some order, so I would use the Quake console to get a list of maps and manually load the next map.
