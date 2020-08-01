@@ -316,32 +316,6 @@ then
       fi
       exit 1
     fi
-    # We've got our gamedir, so see if we can make a shortcut (if enabled).
-    if [[ -n "$shortcuts_dir" ]]
-    then
-      mod=$(basename "$destdir")
-      tmpfile=$(mktemp)
-      echo -n "$destdir" > $tmpfile
-      mkdir -p "$shortcuts_dir"
-      mv "$tmpfile" "$shortcuts_dir"/"$mod".quake
-      if [[ $? -ne 0 ]]
-      then
-        rm -rf $destdir
-        rm -f $tmpfile
-        if [[ ! -d "$shortcuts_dir" ]]
-        then
-          message "shortcuts dir $shortcuts_dir does not exist"
-        else
-          if [[ -f "$destdir" ]]
-          then
-            message "shortcut for $mod already exists"
-          else
-            message "unable to create shortcut for $mod"
-          fi
-        fi
-        exit 1
-      fi
-    fi
     # Take our best shot at making this playable.
     cd "$destdir"
     # Try to get rid of any extra directories generated in archive-creation,
@@ -420,6 +394,33 @@ then
     if [[ $cleanup_archive == "true" ]]
     then
       rm -f "$arg"
+    fi
+    # See if we can make a shortcut (if enabled).
+    if [[ -n "$shortcuts_dir" ]]
+    then
+      mod=$(basename "$destdir")
+      tmpfile=$(mktemp)
+      echo -n "$destdir" > $tmpfile
+      mkdir -p "$shortcuts_dir"
+      mv "$tmpfile" "$shortcuts_dir"/"$mod".quake
+      if [[ $? -ne 0 ]]
+      then
+        rm -rf $destdir
+        rm -f $tmpfile
+        if [[ ! -d "$shortcuts_dir" ]]
+        then
+          message "shortcuts dir $shortcuts_dir does not exist"
+        else
+          if [[ -f "$destdir" ]]
+          then
+            message "shortcut for $mod already exists"
+          else
+            message "unable to create shortcut for $mod"
+          fi
+        fi
+        # Don't bail out at this point... we don't have a shortcut, it's not
+        # the end of the world.
+      fi
     fi
     # Fall through into the gamedir processing below.
     arg="$destdir"
