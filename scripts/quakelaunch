@@ -326,27 +326,24 @@ then
       # Using match patterns with the config files to force case-insensitive
       # match for the whole name (from the shopt -s nocaseglob).
       rm -f *.exe *.dll [Cc]onfig.cfg [Aa]utoexec.cfg
-      # If (other than docs) there is only one file here, and its a
-      # subdirectory, and it's not a known Quake content directory... it's
-      # probably packaging cruft. Move its contents up and keep looping.
-      stuffhere=$(ls -1 --ignore=*.txt --ignore=*.htm* --ignore=*.doc --ignore=*readme*)
-      if [[ $(echo "$stuffhere" | wc -l) -eq 1 ]]
+      # If there is only one directory here, and it's not a known Quake
+      # content directory, then it's packaging cruft. Move its contents up
+      # and keep looping.
+      dirshere=$(find -maxdepth 1 -type d | grep -v '^\.$')
+      if [[ "$dirshere" != "" && $(echo "$dirshere" | wc -l) -eq 1 ]]
       then
-        if [[ -d "$stuffhere" ]]
+        echo "$knowndirs" | grep -qwi "$dirshere"
+        if [[ $? -ne 0 ]]
         then
-          echo "$knowndirs" | grep -qwi "$stuffhere"
+          mv "$dirshere"/* .
           if [[ $? -ne 0 ]]
           then
-            mv "$stuffhere"/* .
-            if [[ $? -ne 0 ]]
-            then
-              rm -rf "$destdir"
-              message "failed in organizing the extracted archive contents"
-              exit 1
-            fi
-            rm -rf "$stuffhere"
-            continue
+            rm -rf "$destdir"
+            message "failed in organizing the extracted archive contents"
+            exit 1
           fi
+          rm -rf "$dirshere"
+          continue
         fi
       fi
       break
