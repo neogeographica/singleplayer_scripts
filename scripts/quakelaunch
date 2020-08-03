@@ -96,11 +96,11 @@ function recap_dirs {
 }
 
 # Function to force some filenames (or just extensions) to lowercase. Quake
-# assumes lowercase extensions for: pak/dem/sav files, stuff in the maps dir,
+# assumes lowercase extensions for: pak/dem/sav/dat files, stuff in the maps dir,
 # stuff in the locs dir, and stuff in the music dir. In the case of pak files
-# we'll lowercase the whole name.
+# and dat files we'll lowercase the whole name.
 function recap_files {
-  pakfiles=$(ls -1d *.pak 2>/dev/null)
+  pakfiles=$(ls -1d *.pak *.dat 2>/dev/null)
   for file in $pakfiles
   do
     goodfile=$(echo $file | tr '[:upper:]' '[:lower:]')
