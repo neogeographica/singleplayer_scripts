@@ -51,7 +51,7 @@ If you will be using ".quake" shortcuts (see below), it is nice to have an autom
 
 # Usage notes
 
-The scripts are meant to be used through desktop integration, but you can also run them manually. Each script can take one argument.
+The scripts are meant to be used through desktop integration, but you can also run them manually. Each script can take one argument, which should be an absolute path to some file or directory.
 
 "quakelaunch" with zero arguments will just launch Quake.
 
@@ -122,7 +122,7 @@ If you try to launch a non-standalone gamedir that mentions Arcane Dimensions or
 * If you're set up to handle AD/Copper as a "basegame", the gamedir will be launched accordingly.
 * Otherwise the gamedir will be launched normally without specifying any basegame. The script assumes you know what you're doing! (This might change in future releases.)
 
-Note that because the script just looks for occurences of "Arcane Dimensions" or "Copper" in the readme files, if the readme says something like "built for vanilla id1 but also tested with Copper" then the gamedir will get launched with Copper. I haven't found this to be a real problem yet (and I like Copper anyway) &mdash; but if something like this does happen, and you want to force the script to launch the gamedir in id1, then you can edit the readme to remove the offending reference.
+Note that because the script just looks for occurences of "Arcane Dimensions" or "Copper" in the readme files, if for example the readme says something like "built for vanilla id1 but also tested with Copper" then the gamedir will get launched with Copper. I haven't found this to be a real problem yet (and I like Copper anyway) &mdash; but if something like this does happen, and you want to force the script to launch the gamedir in id1, then you can edit the readme to remove the offending reference.
 
 ## Per-gamedir settings
 
@@ -146,7 +146,7 @@ Some packs of maps don't include a custom start map; or maybe they do, but it's 
 
 This script provides an optional helper to make that process a bit nicer. If you define a value for jam_keybind in "quakelaunch.conf", that key will be bound to an alias that will load the "next map" in a list of maps from the gamedir. So when you first load up the map pack, press that key to be taken to the first non-startmap map in the pack. Or if you're just in the Quake console rather than in a startmap, you can enter the "jam" command in the console.
 
-When you're done with that first map (either before or after you go through its exit portal), press the key again to go to the next map. Etc. If you've played through the whole list then pressing the key will just print the message "All Done!" in the upper-left-hand corner of the screen.
+When you're done with that first map (either before or after you go through its exit portal), press the key again to go to the next map. Etc. If you've played through the whole list then pressing the key will just generate a beep and the message "All Done" in the upper-left-hand corner of the screen.
 
 If you make a savegame and then come back later to pick up where you left off, using the autoload-latest-savegame feature, the mapjam helper will be set up correctly so that it starts at your current spot in the map list. The same is true if you use the launch-from-bsp feature to directly load a specific map.
 
@@ -165,7 +165,7 @@ There's no need to check that that is the exact list you get, the idea is just t
 
 Next, you can test the scripts from the shell command line.
 
-Give the "quakelaunch" script one argument that is a path to a bsp file within an existing Quake gamedir. It should launch Quake with that gamedir activated and that bsp file loaded.
+Give the "quakelaunch" script one argument that is an absolute path to a bsp file within an existing Quake gamedir. It should launch Quake with that gamedir activated and that bsp file loaded.
 
 Now try running it with an argument that is a path to an existing gamedir. It should launch Quake with that gamedir activated, and possibly choosing a map to load as described above.
 
