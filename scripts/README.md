@@ -16,6 +16,7 @@ If you want to use the auto-install feature, you will need to have installed the
 ```bash
 sudo apt-get install atool
 ```
+You may then want/need to install some of the various tools mentioned at the bottom of the atool webpage. For example, I already had tar, zip, gzip, and p7zip... but I needed to install rar as well in order to handle .rar archives.
 
 **2. Install optional Python module "expak"**
 
