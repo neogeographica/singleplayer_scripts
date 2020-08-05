@@ -444,6 +444,11 @@ then
   basedir="$gamedirparent"
   mod=$(basename "$gamedir")
   cd "$gamedir"
+  # Allow gamedir-specific override of quakelaunch.conf stuff.
+  if [[ -f ./quakelaunch.conf ]]
+  then
+    source ./quakelaunch.conf
+  fi
   # Take care of any obvious capitalization gotchas.
   if [[ $fix_capitalization == "true" ]]
   then
@@ -553,19 +558,19 @@ then
   then
     mapname="${bsp%.*}"
     jamhelper=$(jam_helper "$basedir/$mod" "$maplist" "$mapname")
-    exec "$quake" -basedir "$basedir" $basegame -game "$mod" +map "$mapname" $jamhelper
+    exec "$quake" -basedir "$basedir" $quakeargs $basegame -game "$mod" +map "$mapname" $jamhelper
   fi
   # If there's an existing savegame, load the most recent.
   if [[ -n "$lastsave" ]]
   then
     mapname=$(savemap "$basedir/$mod/$lastsave")
     jamhelper=$(jam_helper "$basedir/$mod" "$maplist" "$mapname")
-    exec "$quake" -basedir "$basedir" $basegame -game "$mod" +load "${lastsave%.*}" $jamhelper
+    exec "$quake" -basedir "$basedir" $quakeargs $basegame -game "$mod" +load "${lastsave%.*}" $jamhelper
   fi
   # If we don't have a good maplist to work with, just load the mod.
   if [[ "$valid_maplist" == "false" ]]
   then
-    exec "$quake" -basedir "$basedir" $basegame -game "$mod"
+    exec "$quake" -basedir "$basedir" $quakeargs $basegame -game "$mod"
   fi
   # If there's only one map, that's our huckleberry.
   if [[ $(echo "$maplist" | wc -w) -eq 1 ]]
@@ -574,7 +579,7 @@ then
     # No real need for the mapjam helper here, but do it anyway so they'll
     # get the "all done" message if they hit the keybind
     jamhelper=$(jam_helper "$basedir/$mod" "$maplist" "$singlemap")
-    exec "$quake" -basedir "$basedir" $basegame -game "$mod" +map $singlemap $jamhelper
+    exec "$quake" -basedir "$basedir" $quakeargs $basegame -game "$mod" +map $singlemap $jamhelper
   fi
   # More than one map. Is there a start map? Use it if so.
   if [[ "$maplist" =~ maps/start.bsp ]]
@@ -582,7 +587,7 @@ then
     # Need to be careful to use the right capitalization.
     startmap=$(echo "$maplist" | sed 's/.*maps\/\(start\)\.bsp.*/\1/I')
     jamhelper=$(jam_helper "$basedir/$mod" "$maplist" "$startmap")
-    exec "$quake" -basedir "$basedir" $basegame -game "$mod" +map $startmap $jamhelper
+    exec "$quake" -basedir "$basedir" $quakeargs $basegame -game "$mod" +map $startmap $jamhelper
   fi
   # It's possible there's some other map that ends in "start.bsp", like
   # "acstart.bsp". Use THAT if it exists.
@@ -590,7 +595,7 @@ then
   then
     startmap=$(echo "$maplist" | sed 's/.*\/\([^ ]*start\)\.bsp.*/\1/I')
     jamhelper=$(jam_helper "$basedir/$mod" "$maplist" "$startmap")
-    exec "$quake" -basedir "$basedir" $basegame -game "$mod" +map $startmap $jamhelper
+    exec "$quake" -basedir "$basedir" $quakeargs $basegame -game "$mod" +map $startmap $jamhelper
   fi
   # Try excluding maps that appear to be bmodels, see if that leaves us with
   # just one choice.
@@ -599,12 +604,12 @@ then
   then
     singlemap=$(basename ${filtered%.*})
     jamhelper=$(jam_helper "$basedir/$mod" "$maplist" "$singlemap")
-    exec "$quake" -basedir "$basedir" $basegame -game "$mod" +map $singlemap $jamhelper
+    exec "$quake" -basedir "$basedir" $quakeargs $basegame -game "$mod" +map $singlemap $jamhelper
   fi
   # There's some other heuristics we could use here buuuuut we risk skipping
   # past the actual first map and causing confusion. So no more cleverness.
   jamhelper=$(jam_helper "$basedir/$mod" "$maplist")
-  exec "$quake" -basedir "$basedir" $basegame -game "$mod" $jamhelper
+  exec "$quake" -basedir "$basedir" $quakeargs $basegame -game "$mod" $jamhelper
 fi
 
 # If we got here, we couldn't figure out what to do.

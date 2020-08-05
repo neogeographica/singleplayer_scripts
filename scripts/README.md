@@ -123,6 +123,22 @@ If you try to launch a non-standalone gamedir that mentions Arcane Dimensions or
 
 Note that because the script just looks for occurences of "Arcane Dimensions" or "Copper" in the readme files, if the readme says something like "built for vanilla id1 but also tested with Copper" then the gamedir will get launched with Copper. I haven't found this to be a real problem yet (and I like Copper anyway) &mdash; but if something like this does happen, and you want to force the script to launch the gamedir in id1, then you can edit the readme to remove the offending reference.
 
+## Per-gamedir settings
+
+Sometimes you may want to change the behavior of the quakelaunch script just for a particular gamedir. You can do this by putting a "quakelaunch.conf" file into that gamedir. Any settings in that file will take priority over those in the main configuration.
+
+Don't put every possible setting in such a file; just the ones you want to change.
+
+For example, if a gamedir is a "bots" mod that requires being launched with listen-server settings, you could put a "quakelaunch.conf" file into that gamedir that only contains this line:
+```
+quakeargs="-listen 16"
+```
+
+Or if a gamedir doesn't work with your usual Quake engine and you need to use some other Quake executable with it, you could put a "quakelaunch.conf" file into that gamedir that only contains a line like this:
+```
+quake="/path/to/my/other/Quake/executable"
+```
+
 ## Mapjam helper
 
 Some packs of maps don't include a custom start map; or maybe they do, but it's just a giant collection of slipgates and it's annoying to keep track of where you've already been. In these cases I usually just want to play through the maps in some order, so I would use the Quake console to get a list of maps and manually load the next map.
