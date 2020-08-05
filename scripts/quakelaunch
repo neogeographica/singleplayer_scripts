@@ -481,7 +481,7 @@ then
           exit 1
         fi
       else
-        if [[ -n "$ad_basegame_args" ]] && grep -qi "arcane dimension" *.txt *.htm* *readme*
+        if [[ -n "$ad_basegame_args" ]] && grep -qi "arcane dimension" *.txt *.htm* *readme* 2> /dev/null
         then
           if [[ $(is_standalone) == "false" ]]
           then
@@ -494,7 +494,7 @@ then
             fi
           fi
         else
-          if [[ -n "$copper_basegame_args" ]] && grep -qi "copper" *.txt *.htm* *readme*
+          if [[ -n "$copper_basegame_args" ]] && grep -qi "copper" *.txt *.htm* *readme* 2> /dev/null
           then
             if [[ $(is_standalone) == "false" ]]
             then
