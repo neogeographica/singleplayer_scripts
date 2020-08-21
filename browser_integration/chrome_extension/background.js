@@ -104,41 +104,100 @@ chrome.contextMenus.onClicked.addListener(
     // Note that we can't give the original url to chrome.downloads.download
     // because that will force the MIME type and the file extension, ignoring
     // whatever type/extension we request. So let's fetch it internally.
-    const url = info.linkUrl;
-    let response = await fetch(url);
-    if (response.status !== 200) {
-      // Can't get it, too bad. Note that we also can't handle redirects.
-      console.log("bad status trying to fetch URL: " + response.status);
-      setStatus(false, response.status.toString());
-      return;
-    }
-    const reader = response.body.getReader();
-    const contentLength = +response.headers.get('Content-Length');
-    let receivedLength = 0;
-    let chunks = [];
+    let url = info.linkUrl;
+    let didRedirect = false;
+    let chunks;
+    // Start a loop in order to support one redirect attempt.
     while (true) {
-      const {done, value} = await reader.read();
-      if (done) {
+      // It would be nice to set our user agent to look like a simple
+      // command-line tool to avoid getting some HTML page response from
+      // certain download servers that try to be clever. However:
+      //   https://bugs.chromium.org/p/chromium/issues/detail?id=571722
+      // So for now let's not even try that.
+      // Note that fetch will by default handle any 301 redirect.
+      let response = await fetch(url);
+      if (response.status !== 200) {
+        // Can't get it, too bad.
+        console.log("bad status trying to fetch URL: " + response.status);
+        setStatus(false, response.status.toString());
+        return;
+      }
+      const reader = response.body.getReader();
+      const contentLength = +response.headers.get('Content-Length');
+      const contentType = response.headers.get('Content-Type');
+      const isHTML = contentType.startsWith("text/html");
+      let receivedLength = 0;
+      chunks = [];
+      while (true) {
+        const {done, value} = await reader.read();
+        if (done) {
+          break;
+        }
+        chunks.push(value);
+        receivedLength += value.length;
+        if ((receivedLength <= contentLength) && !isHTML) {
+          setStatus(true, Math.trunc(receivedLength * 100 / contentLength) + "%");
+        } else {
+          setStatus(true, "...");
+        }
+      }
+      // Don't check that we received the reported content length... sometimes
+      // the server misreports. Anyway just do what a "normal" download would do
+      // and go ahead to try to process it.
+      // If not an HTML page that's good. Break out of this loop and proceed.
+      if (!isHTML) {
         break;
       }
-      chunks.push(value);
-      receivedLength += value.length;
-      setStatus(true, Math.trunc(receivedLength * 100 / contentLength) + "%");
-    }
-    if (receivedLength !== contentLength) {
-      // Didn't receive the whole thing. (Or received too much??)
-      console.log("bytes received != content-length");
-      setStatus(false, "err");
-      return;
+      // Hmm. This may be a page trying to redirect us with a META element,
+      // e.g. what t.co does.
+      // We will only tolerate one such redirect, to avoid getting stuck in
+      // a loop.
+      if (didRedirect) {
+        console.log("redirect led to another HTML page");
+        setStatus(false, "err");
+        return;
+      }
+      // OK we haven't tried a redirect yet so let's see if this page is
+      // asking us to do that.
+      const htmlBlob = new Blob(chunks, {type : "text/html"});
+      const page = await new Response(htmlBlob).text();
+      let parser = new DOMParser();
+      const doc = parser.parseFromString(page, "text/html");
+      for (element of doc.getElementsByTagName("META")) {
+        const attrs = element.attributes;
+        const httpEquiv = attrs.getNamedItem("http-equiv")
+        if ((httpEquiv !== null) && (httpEquiv.value.toLowerCase() === "refresh")) {
+          const contentValue = attrs.getNamedItem("content");
+          if (contentValue !== null) {
+            const urlMarker = contentValue.value.indexOf('=');
+            if (urlMarker !== -1) {
+              // OK I guess it's a redirect! We'll follow it.
+              url = contentValue.value.substring(urlMarker + 1)
+              console.log("redirecting to " + url);
+              didRedirect = true;
+              break;
+            }
+          }
+        }
+      }
+      if (!didRedirect) {
+        // It's not a redirect (or at least not one we understand) so...
+        console.log("link goes to an HTML page");
+        setStatus(false, "err");
+        return;
+      }
     }
     // Create a "blob" from the fetched chunks, with the MIME type we want.
     const blob = new Blob(chunks, {type : 'application/x-qz'});
     // Now use chrome.downloads.download to handle the blob. Add the ".qz"
-    // extension to the filename.
+    // extension to the filename. We'll use URL parsing to make sure we
+    // ignore any URL parameters.
+    const path = new URL(url).pathname;
+    const file = path.substring(path.lastIndexOf('/') + 1);
     chrome.downloads.download(
       {
         url: URL.createObjectURL(blob),
-        filename: url.substring(url.lastIndexOf('/') + 1) + '.qz',
+        filename: file + '.qz',
         conflictAction: 'uniquify'
       },
       handleDownloadStarted
