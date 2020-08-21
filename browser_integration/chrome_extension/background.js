@@ -107,7 +107,7 @@ chrome.contextMenus.onClicked.addListener(
     let url = info.linkUrl;
     let didRedirect = false;
     let chunks;
-    // Start a loop in order to support one redirect attempt.
+    // Start a loop in order to support one META-refresh-style redirect.
     while (true) {
       // It would be nice to set our user agent to look like a simple
       // command-line tool to avoid getting some HTML page response from
@@ -122,6 +122,10 @@ chrome.contextMenus.onClicked.addListener(
         setStatus(false, response.status.toString());
         return;
       }
+      // Make sure we're working with the actual final URL (might have had
+      // a 301 redirect).
+      url = response.url
+      // Now pull the content.
       const reader = response.body.getReader();
       const contentLength = +response.headers.get('Content-Length');
       const contentType = response.headers.get('Content-Type');
@@ -142,7 +146,7 @@ chrome.contextMenus.onClicked.addListener(
         }
       }
       // Don't check that we received the reported content length... sometimes
-      // the server misreports. Anyway just do what a "normal" download would do
+      // the server misreports. Just do what a "normal" download would do
       // and go ahead to try to process it.
       // If not an HTML page that's good. Break out of this loop and proceed.
       if (!isHTML) {
