@@ -67,7 +67,7 @@ I like to put any Quake map release into its own gamedir, even vanilla bsp-only 
 
 > To evangelize briefly: Keeping each release in its own gamedir lets me see at a glance what I've currently installed, makes it obvious which savegames and bits of configuration are relevant to which releases, makes "uninstallation" braindead-simple, and also makes it possible to do some automated installation and launching with a pretty lightweight script.
 
-One consequence of this approach is that the auto-install feature *will not work* for non-standalone Arcane Dimensions and Copper releases, *unless* you are using a Quake engine like [FTE](http://fte.triptohell.info/) or [Quakespasm-Spiked](http://triptohell.info/moodles/qss/) that supports specifying a "basegame" or multiple "game" directories to use when loading a mod or maps. See the "Arcane Dimensions and Copper" section of [scripts/README.md](scripts/README.md) for more details.
+One consequence of this approach is that the auto-install feature *will not work* for non-standalone Arcane Dimensions and Copper releases, *unless* you are using a Quake engine like [FTE](http://fte.triptohell.info/) or [Quakespasm-Spiked](http://triptohell.info/moodles/qss/) that supports specifying multiple "game" directories to use when loading a mod or maps. See the "Arcane Dimensions and Copper" section of [scripts/README.md](scripts/README.md) for more details.
 
 ## Some assembly required
 
@@ -81,7 +81,7 @@ If installing a release correctly requires unusual steps like also downloading a
 
 If running a release correctly requires unusual command-line arguments for Quake, this script won't do that for you.
 
-If running a release correctly requires a basegame like Quoth or a missionpack, this script won't install that dependency for you if it's missing (but it should catch that error). Also, if the release requires a basegame that is *not* mentioned in a doc/readme included in the release, this script won't figure out that it needs that basegame.
+If running a release correctly requires a base gamedir like Quoth or a missionpack, this script won't install that dependency for you if it's missing (but it should catch that error). Also, if the release requires a base gamedir that is *not* mentioned in a doc/readme included in the release, this script won't figure out that it needs that base.
 
 Basically... be familiar with how the script works (described in [scripts/README.md](scripts/README.md)), check out the readme of whatever it is you want to install or run, and you'll see if there's special stuff you need to take care of manually. And when Quake is launched, check the console for errors that might indicate that different launch arguments are needed.
 

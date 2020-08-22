@@ -98,9 +98,9 @@ If the script can't figure out which map to load, just use the console as usual 
 
 ## Quoth and missionpacks
 
-If the gamedir contains a document that mentions using quoth, hipnotic, or rogue as a basegame, then "quakelaunch" will honor that when launching it. It will stop with an error if the necessary basegame is not present.
+If the gamedir contains a document that mentions using quoth, hipnotic, or rogue as a base gamedir, then "quakelaunch" will honor that when launching it. It will stop with an error if the necessary base is not present.
 
-If you have a gamedir that requires one of these basegames but doesn't mention that fact in any of its docs, you can create a ".txt" file in the gamedir to trigger "quakelaunch" to use the correct basegame. The file should contain "-quoth", "-hipnotic", or "-rogue" accordingly. For example if you need a gamedir to use Quoth but it doesn't say that in its docs, you could do this inside the gamedir:
+If you have a gamedir that requires one of these base gamedirs but doesn't mention that fact in any of its docs, you can create a ".txt" file in the gamedir to trigger "quakelaunch" to use the correct base. The file should contain "-quoth", "-hipnotic", or "-rogue" accordingly. For example if you need a gamedir to use Quoth but it doesn't say that in its docs, you could do this inside the gamedir:
 ```
 echo "-quoth" > basegame.txt
 ```
@@ -115,12 +115,12 @@ A "standalone" release is detected if it has a progs.dat or any pak files. If th
 For a non-standalone release it's a little more complicated. As described in the top-level readme I like to keep each release in its own gamedir. Ideally I would want to put the new stuff in its own gamedir and use Arcane Dimensions or Copper as a base game directory that the new gamedir can build on... same as I do with content built for Quoth or the missionpacks. Many Quake engines don't have that feature, but I do know that [FTE](http://fte.triptohell.info/) and [Quakespasm-Spiked](http://triptohell.info/moodles/qss/) can do it, and I've included examples in the conf file that would work with those two engines. ([DarkPlaces](https://icculus.org/twilight/darkplaces/) should also have this capability, but I haven't tried that.) If you have a Quake engine that can do it, you can set the relevant options in your "quakelaunch.conf" file.
 
 So if you try to install a non-standalone Arcane Dimensions or Copper release, different things will happen based on your configuration:
-* If you're set up (in "quakelaunch.conf") to handle AD/Copper as a "basegame", the content will be installed in its own gamedir and launched accordingly.
-* Otherwise, the script will exit without doing the installation, generating a desktop notification that tells you why it couldn't auto-install. You'll need to install the content manually, by merging files into the main AD/Copper mod directory or whatever you would normally do.
+* If you're set up (in "quakelaunch.conf") to handle AD/Copper as a base gamedir, the non-standalone release will be installed in its own gamedir and launched accordingly.
+* Otherwise, the script will exit without doing the installation, generating a desktop notification that tells you why it couldn't auto-install. You'll need to install the non-standalone release manually, by merging files into the main AD/Copper mod directory or whatever you would normally do.
 
 If you try to launch a non-standalone gamedir that mentions Arcane Dimensions or Copper in its docs:
-* If you're set up to handle AD/Copper as a "basegame", the gamedir will be launched accordingly.
-* Otherwise the gamedir will be launched normally without specifying any basegame. The script assumes you know what you're doing! (This might change in future releases.)
+* If you're set up to handle AD/Copper as a base gamedir, the gamedir will be launched accordingly.
+* Otherwise the gamedir will be launched normally without specifying any base. The script assumes you know what you're doing! (This might change in future releases.)
 
 Note that because the script just looks for occurences of "Arcane Dimensions" or "Copper" in the readme files, if for example the readme says something like "built for vanilla id1 but also tested with Copper" then the gamedir will get launched with Copper. I haven't found this to be a real problem yet (and I like Copper anyway) &mdash; but if something like this does happen, and you want to force the script to launch the gamedir in id1, then you can edit the readme to remove the offending reference.
 

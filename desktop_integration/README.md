@@ -2,7 +2,7 @@
 
 These are the files necessary to connect the script behaviors to desktop actions.
 
-Once these files have been used to set up desktop integration, the features described in the [top-level readme](../README.md) will be available.
+Once these files have been used to set up desktop integration, the features described in the [top-level readme](../README.md) will be available. And if you want, you can then do the [Chrome browser integration](../browser_integration/README.md)
 
 # Setup
 
@@ -112,7 +112,7 @@ The typical setup of these filetypes and applications will create these desktop 
 
 You can also open and install types of archives other than ".zip", but "Quake" won't immediately be shown in the right-click-open menu for other archive types the first time you do so. You can choose to open with "Other Application", then "View All Applications" to get a list of more applications. Find and select "Quake" in that list.
 
-Just make sure you do *not* set "Quake" as the default application for an archive type, as that is typically not what you want. E.g. in elementary OS there is a "Set as default" checkbox that I would make sure remains unchecked.
+Just make sure you do *not* set "Quake" as the *default* application for an archive type, as that is typically not what you want. E.g. in elementary OS there is a "Set as default" checkbox that I would make sure remains unchecked.
 
 Once you have opened a particular archive type this way, "Quake" will be presented as a right-click-open choice for that archive type in the future.
 
