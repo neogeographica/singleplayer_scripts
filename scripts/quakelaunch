@@ -147,10 +147,7 @@ function jam_config {
   then
     echo ""
   else
-    # Get rid of the bsp extensions before sorting, so we get the same sort
-    # logic as seen in the Quake console. Might as well get rid of the "maps/"
-    # while we're at it.
-    maplist=$(echo "$1" | sed 's/maps\/\([^ ]*\)\.bsp/\1/gI')
+    maplist="$1"
     loadmap="$2"
     startalias="alias jam jam_map_1"
     aliases=""
@@ -204,7 +201,10 @@ function jam_helper {
 
 arg="$1"
 maplist=""
-basegame=""
+basegame_args=""
+startmap=""
+current_startmap=""
+startmap_args=""
 jamhelper=""
 bsp=""
 
@@ -445,9 +445,39 @@ then
   mod=$(basename "$gamedir")
   cd "$gamedir"
   # Allow gamedir-specific override of quakelaunch.conf stuff.
+  calc_basegame_args=true
+  calc_maplist=true
+  calc_startmap=true
   if [[ -f ./quakelaunch.conf ]]
   then
+    # Pick up any variable overrides.
     source ./quakelaunch.conf
+    # For certain overrides, note that we should NOT try to calculate values
+    # for these vars below.
+    # basegame_args could be set to anything, including empty.
+    if grep -q -- "^\s*basegame_args=" ./quakelaunch.conf
+    then
+      calc_basegame_args=false
+    fi
+    # maplist and startmap only make sense to set to nonempty values.
+    if [[ "$maplist" != "" ]]
+    then
+      calc_maplist=false
+      valid_maplist=true
+    fi
+    if [[ "$startmap" != "" ]]
+    then
+      calc_startmap=false
+      startmap_args="+map \"$startmap\""
+    fi
+    # Make preview_readme_and_config be false on future launches.
+    if [[ "$preview_readme_and_config" != "false" ]]
+    then
+      tempconf=./quakelaunch.conf.$$
+      grep -v -- "^\s*preview_readme_and_config=" ./quakelaunch.conf > "$tempconf"
+      echo "preview_readme_and_config=false" >> "$tempconf"
+      mv -f "$tempconf" ./quakelaunch.conf
+    fi
   fi
   # Take care of any obvious capitalization gotchas.
   if [[ $fix_capitalization == "true" ]]
@@ -455,60 +485,64 @@ then
     recap_dirs
     recap_files
   fi
-  # See if we can figure out any required basegame from grepping docs.
-  if grep -qi -- "-quoth\|-game quoth" *.txt *.htm* *readme* 2> /dev/null
+  # If basegame_args was not explicitly set in a gamedir-specific conf, see if
+  # we can figure out any required basegame from grepping docs.
+  if [[ $calc_basegame_args == "true" ]]
   then
-    if [[ -d "$basedir"/quoth ]]
+    if grep -qi -- "-quoth\|-game quoth" *.txt *.htm* *readme* 2> /dev/null
     then
-      basegame=-quoth
-    else
-      message "requires quoth basegame but quoth is not installed"
-      exit 1
-    fi
-  else
-    if grep -qi -- "-hipnotic\|-game hipnotic" *.txt *.htm* *readme* 2> /dev/null
-    then
-      if [[ -d "$basedir"/hipnotic ]]
+      if [[ -d "$basedir"/quoth ]]
       then
-        basegame=-hipnotic
+        basegame_args=-quoth
       else
-        message "requires hipnotic basegame but hipnotic is not installed"
+        message "requires quoth basegame but quoth is not installed"
         exit 1
       fi
     else
-      if grep -qi -- "-rogue\|-game rogue" *.txt *.htm* *readme* 2> /dev/null
+      if grep -qi -- "-hipnotic\|-game hipnotic" *.txt *.htm* *readme* 2> /dev/null
       then
-        if [[ -d "$basedir"/rogue ]]
+        if [[ -d "$basedir"/hipnotic ]]
         then
-          basegame=-rogue
+          basegame_args=-hipnotic
         else
-          message "requires rogue basegame but rogue is not installed"
+          message "requires hipnotic basegame but hipnotic is not installed"
           exit 1
         fi
       else
-        if [[ -n "$ad_basegame_args" ]] && grep -qi "arcane dimension" *.txt *.htm* *readme* 2> /dev/null
+        if grep -qi -- "-rogue\|-game rogue" *.txt *.htm* *readme* 2> /dev/null
         then
-          if [[ $(is_standalone) == "false" ]]
+          if [[ -d "$basedir"/rogue ]]
           then
-            if [[ -z "$ad_gamedir" || -d "$basedir"/"$ad_gamedir" ]]
-            then
-              basegame=$ad_basegame_args
-            else
-              message "requires $ad_gamedir basegame but $ad_gamedir is not installed"
-              exit 1
-            fi
+            basegame_args=-rogue
+          else
+            message "requires rogue basegame but rogue is not installed"
+            exit 1
           fi
         else
-          if [[ -n "$copper_basegame_args" ]] && grep -qi "copper" *.txt *.htm* *readme* 2> /dev/null
+          if [[ -n "$ad_basegame_args" ]] && grep -qi "arcane dimension" *.txt *.htm* *readme* 2> /dev/null
           then
             if [[ $(is_standalone) == "false" ]]
             then
-              if [[ -z "$copper_gamedir" || -d "$basedir"/"$copper_gamedir" ]]
+              if [[ -z "$ad_gamedir" || -d "$basedir"/"$ad_gamedir" ]]
               then
-                basegame=$copper_basegame_args
+                basegame_args=$ad_basegame_args
               else
-                message "requires $copper_gamedir basegame but $copper_gamedir is not installed"
+                message "requires $ad_gamedir basegame but $ad_gamedir is not installed"
                 exit 1
+              fi
+            fi
+          else
+            if [[ -n "$copper_basegame_args" ]] && grep -qi "copper" *.txt *.htm* *readme* 2> /dev/null
+            then
+              if [[ $(is_standalone) == "false" ]]
+              then
+                if [[ -z "$copper_gamedir" || -d "$basedir"/"$copper_gamedir" ]]
+                then
+                  basegame_args=$copper_basegame_args
+                else
+                  message "requires $copper_gamedir basegame but $copper_gamedir is not installed"
+                  exit 1
+                fi
               fi
             fi
           fi
@@ -516,100 +550,185 @@ then
       fi
     fi
   fi
-  # Time to build our potential maplist.
-  # First see if we can look for maps inside any pak files.
-  valid_maplist=true
-  paks=$(ls -1d *.pak 2>/dev/null | tr '\n' ' ')
-  if [[ -n "$paks" ]]
+  # If maplist was not explicitly set in a gamedir-specific conf, build it now.
+  if [[ $calc_maplist == "true" ]]
   then
-    # If the Python module expak is installed, use that to list maps inside
-    # the paks.
-    if [[ $expak_installed == "true" ]]
+    # First see if we can look for maps inside any pak files.
+    valid_maplist=true
+    paks=$(ls -1d *.pak 2>/dev/null | tr '\n' ' ')
+    if [[ -n "$paks" ]]
     then
-      paklist=$(echo $paks | sed 's/ /", "/g' | sed 's/\(.*\)/"\1"/')
-      maplist=$(python -c "import expak;print(' '.join([r for r in expak.resource_names([$paklist]) if r.lower().startswith('maps/')]))" 2>/dev/null)
-      if [[ $? -ne 0 ]]
+      # If the Python module expak is installed, use that to list maps inside
+      # the paks.
+      if [[ $expak_installed == "true" ]]
       then
-        # Didn't work. Since expak is supposedly installed let's complain.
-        message "expak_installed=true in quakelaunch.conf, but failed to use expak"
+        paklist=$(echo $paks | sed 's/ /", "/g' | sed 's/\(.*\)/"\1"/')
+        maplist=$(python -c "import expak;print(' '.join([r for r in expak.resource_names([$paklist]) if r.lower().startswith('maps/')]))" 2>/dev/null)
+        if [[ $? -ne 0 ]]
+        then
+          # Didn't work. Since expak is supposedly installed let's complain.
+          message "expak_installed=true in quakelaunch.conf, but failed to use expak"
+          valid_maplist=false
+        fi
+      else
+        # There are paks but we can't see what maps might be in there.
         valid_maplist=false
       fi
-    else
-      # There are paks but we can't see what maps might be in there.
-      valid_maplist=false
     fi
-  fi
-  # If we haven't given up on maplist-building, now look for loose bsp files
-  # and add those to our list.
-  if [[ "$valid_maplist" == "true" ]]
-  then
-    loosemaps=$(ls -1d maps/*.bsp 2>/dev/null | tr '\n' ' ')
-    if [[ -n "$loosemaps" ]]
+    # If we haven't given up on maplist-building, now look for loose bsp files
+    # and add those to our list.
+    if [[ "$valid_maplist" == "true" ]]
     then
-      maplist="$maplist $loosemaps"
+      loosemaps=$(ls -1d maps/*.bsp 2>/dev/null | tr '\n' ' ')
+      if [[ -n "$loosemaps" ]]
+      then
+        maplist="$maplist $loosemaps"
+      fi
+      # Nuke any leading/trailing spaces; remove "maps/" and .bsp extensions.
+      maplist=${maplist##+([[:space:]])}
+      maplist=${maplist%%+([[:space:]])}
+      maplist=$(echo "$maplist" | sed 's/maps\/\([^ ]*\)\.bsp/\1/gI')
     fi
   fi
-  # Find the latest savegame, if any.
-  lastsave=$(ls -1dt *.sav 2>/dev/null | head -1)
-  # Let's run some Quake!
-  cd "$quakedir"
-  # If there's a specific bsp targetted, launch it.
+  # If startmap was not explicitly set in a gamedir-specific conf, determine
+  # it now. We may or may not use this for launch (e.g. not if loading a
+  # savegame) but we may still want to write it into the config.
+  if [[ $calc_startmap == "true" && "$valid_maplist" == "true" ]]
+  then
+    # If there's only one map, that's our huckleberry.
+    if [[ $(echo "$maplist" | wc -w) -eq 1 ]]
+    then
+      startmap="$maplist"
+    else
+      # More than one map. Is there a start map? Use it if so. Note for
+      # this comparison we slap a leading/trailing space back onto the
+      # list so we can easily do a complete-word match for "start".
+      if [[ " $maplist " =~ " start " ]]
+      then
+        # Need to be careful to use the right capitalization.
+        startmap=$(echo " $maplist " | sed 's/.* \(start\) .*/\1/I')
+      else
+        # It's possible there's some other map that ends in "start", like
+        # "acstart". Use THAT if it exists.
+        if [[ "$maplist " =~ "start " ]]
+        then
+          startmap=$(echo " $maplist " | sed 's/.* \([^ ]*start\)\ .*/\1/I')
+        else
+          # Try excluding maps that appear to be bmodels, see if that
+          # leaves us with just one choice.
+          filtered=$(echo " $maplist" | sed 's/ b_[^ ]*//gI')
+          filtered="${filtered:1}"
+          if [[ $(echo "$filtered" | wc -w) -eq 1 ]]
+          then
+            startmap="$filtered"
+          fi
+        fi
+      fi
+    fi
+    # There's some other heuristics we could use here buuuuut we risk
+    # skipping past the actual first map and causing confusion. So no more
+    # cleverness. We can just load the mod without a startmap and let the
+    # user manually load a map.
+  fi
+  # Now let's figure out which map or savegame to load into. First, if there's
+  # a specific bsp targetted, use that.
   if [[ -n "$bsp" ]]
   then
-    mapname="${bsp%.*}"
-    jamhelper=$(jam_helper "$basedir/$mod" "$maplist" "$mapname")
-    exec "$quake" -basedir "$basedir" $quakeargs $basegame -game "$mod" +map "$mapname" $jamhelper
+    current_startmap="${bsp%.*}"
+    startmap_args="+map \"$current_startmap\""
+  else
+    # If there's an existing savegame, load the most recent.
+    lastsave=$(ls -1dt *.sav 2>/dev/null | head -1)
+    if [[ -n "$lastsave" ]]
+    then
+      current_startmap=$(savemap "$basedir/$mod/$lastsave")
+      startmap_args="+load \"${lastsave%.*}\""
+    else
+      # Otherwise, if we have a startmap from above, use that.
+      if [[ -n "$startmap" ]]
+      then
+        current_startmap="$startmap"
+        startmap_args="+map \"$current_startmap\""
+      fi
+    fi
   fi
-  # If there's an existing savegame, load the most recent.
-  if [[ -n "$lastsave" ]]
+  # Save our calculated args if necessary.
+  if [[ ! -f ./quakelaunch.conf ]]
   then
-    mapname=$(savemap "$basedir/$mod/$lastsave")
-    jamhelper=$(jam_helper "$basedir/$mod" "$maplist" "$mapname")
-    exec "$quake" -basedir "$basedir" $quakeargs $basegame -game "$mod" +load "${lastsave%.*}" $jamhelper
+    echo "# The basegame_args option is a list of Quake arguments used to set a base" > ./quakelaunch.conf
+    echo "# gamedir or missionpack... such as -quoth or -hipnotic. If you don't want" >> ./quakelaunch.conf
+    echo "# any such arguments then set it to an empty value. If you want to specify" >> ./quakelaunch.conf
+    echo "# multiple arguments here, enclose the list of arguments in doublequotes." >> ./quakelaunch.conf
+    echo "basegame_args=\"$basegame_args\"" >> ./quakelaunch.conf
+    echo >> ./quakelaunch.conf
+    echo "# The startmap option is the map name (without the ".bsp" extension) that will" >> ./quakelaunch.conf
+    echo "# be launched into, unless some other map is forced e.g. by a savegame existing." >> ./quakelaunch.conf
+    echo "startmap=\"$startmap\"" >> ./quakelaunch.conf
+    echo >> ./quakelaunch.conf
+    echo "# The maplist option is the list of all singleplayer maps that can/should be" >> ./quakelaunch.conf
+    echo "# playable in this gamedir. It will be used to find a startmap (if startmap" >> ./quakelaunch.conf
+    echo "# is not set above) and to build the "mapjam helper" keybinds." >> ./quakelaunch.conf
+    echo "maplist=\"$maplist\"" >> ./quakelaunch.conf
+    echo >> ./quakelaunch.conf
+    echo "# You can override other options in here too; useful ones include quake (the" >> ./quakelaunch.conf
+    echo "# path to the Quake executable to use) and quakeargs (any other command-line" >> ./quakelaunch.conf
+    echo "# arguments)." >> ./quakelaunch.conf
+    echo >> ./quakelaunch.conf
+    echo "# The preview_readme_and_config option is set false after initial launch so" >> ./quakelaunch.conf
+    echo "# that the readme and config editor(s) won't appear on future launches." >> ./quakelaunch.conf
+    echo "preview_readme_and_config=false" >> ./quakelaunch.conf
   fi
-  # If we don't have a good maplist to work with, just load the mod.
-  if [[ "$valid_maplist" == "false" ]]
+  # Start the readme viewer(s) and config editor.
+  if [[ $preview_readme_and_config == "true" ]]
   then
-    exec "$quake" -basedir "$basedir" $quakeargs $basegame -game "$mod"
+    if [[ -z "$config_editor" ]]
+    then
+      message "the config_editor option in quakelaunch.conf must be set when preview_readme_and_config is true"
+      exit 1
+    fi
+    # Spawn readme viewer(s) as necessary.
+    if [[ -n "$txt_viewer" ]]
+    then
+      for txtfile in $(ls -1d *.txt 2>/dev/null)
+      do
+        $txt_viewer $txtfile &
+      done
+      for readmefile in $(ls -1d !(*.*) 2>/dev/null | grep -i readme)
+      do
+        $txt_viewer $readmefile &
+      done
+    fi
+    if [[ -n "$html_viewer" ]]
+    then
+      for htmlfile in $(ls -1d *.htm* 2>/dev/null)
+      do
+        $html_viewer $htmlfile &
+      done
+    fi
+    if [[ -n "$doc_viewer" ]]
+    then
+      for docfile in $(ls -1d *.doc 2>/dev/null)
+      do
+        $doc_viewer $docfile &
+      done
+    fi
+    if [[ -n "$pdf_viewer" ]]
+    then
+      for pdffile in $(ls -1d *.pdf 2>/dev/null)
+      do
+        $pdf_viewer $pdffile &
+      done
+    fi
+    $config_editor ./quakelaunch.conf
+    source ./quakelaunch.conf
   fi
-  # If there's only one map, that's our huckleberry.
-  if [[ $(echo "$maplist" | wc -w) -eq 1 ]]
+  # Let's run some Quake!
+  cd "$quakedir"
+  if [[ "$valid_maplist" == "true" ]]
   then
-    singlemap=$(basename ${maplist%.*})
-    # No real need for the mapjam helper here, but do it anyway so they'll
-    # get the "all done" message if they hit the keybind
-    jamhelper=$(jam_helper "$basedir/$mod" "$maplist" "$singlemap")
-    exec "$quake" -basedir "$basedir" $quakeargs $basegame -game "$mod" +map $singlemap $jamhelper
+    jamhelper=$(jam_helper "$basedir/$mod" "$maplist" "$current_startmap")
   fi
-  # More than one map. Is there a start map? Use it if so.
-  if [[ "$maplist" =~ maps/start.bsp ]]
-  then
-    # Need to be careful to use the right capitalization.
-    startmap=$(echo "$maplist" | sed 's/.*maps\/\(start\)\.bsp.*/\1/I')
-    jamhelper=$(jam_helper "$basedir/$mod" "$maplist" "$startmap")
-    exec "$quake" -basedir "$basedir" $quakeargs $basegame -game "$mod" +map $startmap $jamhelper
-  fi
-  # It's possible there's some other map that ends in "start.bsp", like
-  # "acstart.bsp". Use THAT if it exists.
-  if [[ "$maplist" =~ start.bsp ]]
-  then
-    startmap=$(echo "$maplist" | sed 's/.*\/\([^ ]*start\)\.bsp.*/\1/I')
-    jamhelper=$(jam_helper "$basedir/$mod" "$maplist" "$startmap")
-    exec "$quake" -basedir "$basedir" $quakeargs $basegame -game "$mod" +map $startmap $jamhelper
-  fi
-  # Try excluding maps that appear to be bmodels, see if that leaves us with
-  # just one choice.
-  filtered=$(echo "$maplist" | sed 's/maps\/b_[^ ]*\.bsp//gI')
-  if [[ $(echo "$filtered" | wc -w) -eq 1 ]]
-  then
-    singlemap=$(basename ${filtered%.*})
-    jamhelper=$(jam_helper "$basedir/$mod" "$maplist" "$singlemap")
-    exec "$quake" -basedir "$basedir" $quakeargs $basegame -game "$mod" +map $singlemap $jamhelper
-  fi
-  # There's some other heuristics we could use here buuuuut we risk skipping
-  # past the actual first map and causing confusion. So no more cleverness.
-  jamhelper=$(jam_helper "$basedir/$mod" "$maplist")
-  exec "$quake" -basedir "$basedir" $quakeargs $basegame -game "$mod" $jamhelper
+  exec "$quake" -basedir "$basedir" $quakeargs $basegame_args -game "$mod" $startmap_args $jamhelper
 fi
 
 # If we got here, we couldn't figure out what to do.
