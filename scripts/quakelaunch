@@ -431,6 +431,7 @@ fi
 # outside of this script.
 if [[ -d "$arg" ]]
 then
+  tempconf=./quakelaunch.conf.$$
   gamedir="$arg"
   gamedirparent=$(dirname "$gamedir")
   # Allow running gamedirs outside the normal basedir if it looks like a
@@ -472,7 +473,6 @@ then
     # Make preview_readme_and_config be false on future launches.
     if [[ "$preview_readme_and_config" != "false" ]]
     then
-      tempconf=./quakelaunch.conf.$$
       grep -v -- "^\s*preview_readme_and_config=" ./quakelaunch.conf > "$tempconf"
       echo "preview_readme_and_config=false" >> "$tempconf"
       mv -f "$tempconf" ./quakelaunch.conf
@@ -621,53 +621,68 @@ then
     # cleverness. We can just load the mod without a startmap and let the
     # user manually load a map.
   fi
-  # Now let's figure out which map or savegame to load into. First, if there's
-  # a specific bsp targetted, use that.
+  # If we're loading a savegame or a specific bsp, we know what map we will
+  # load into (regardless of what the normal "startmap" is).
   if [[ -n "$bsp" ]]
   then
     current_startmap="${bsp%.*}"
     startmap_args="+map \"$current_startmap\""
   else
-    # If there's an existing savegame, load the most recent.
     lastsave=$(ls -1dt *.sav 2>/dev/null | head -1)
     if [[ -n "$lastsave" ]]
     then
       current_startmap=$(savemap "$basedir/$mod/$lastsave")
       startmap_args="+load \"${lastsave%.*}\""
-    else
-      # Otherwise, if we have a startmap from above, use that.
-      if [[ -n "$startmap" ]]
-      then
-        current_startmap="$startmap"
-        startmap_args="+map \"$current_startmap\""
-      fi
     fi
   fi
   # Save our calculated args if necessary.
+  conf_created=false
   if [[ ! -f ./quakelaunch.conf ]]
   then
-    echo "# The basegame_args option is a list of Quake arguments used to set a base" > ./quakelaunch.conf
-    echo "# gamedir or missionpack... such as -quoth or -hipnotic. If you don't want" >> ./quakelaunch.conf
-    echo "# any such arguments then set it to an empty value. If you want to specify" >> ./quakelaunch.conf
-    echo "# multiple arguments here, enclose the list of arguments in doublequotes." >> ./quakelaunch.conf
-    echo "basegame_args=\"$basegame_args\"" >> ./quakelaunch.conf
-    echo >> ./quakelaunch.conf
-    echo "# The startmap option is the map name (without the ".bsp" extension) that will" >> ./quakelaunch.conf
-    echo "# be launched into, unless some other map is forced e.g. by a savegame existing." >> ./quakelaunch.conf
-    echo "startmap=\"$startmap\"" >> ./quakelaunch.conf
-    echo >> ./quakelaunch.conf
-    echo "# The maplist option is the list of all singleplayer maps that can/should be" >> ./quakelaunch.conf
-    echo "# playable in this gamedir. It will be used to find a startmap (if startmap" >> ./quakelaunch.conf
-    echo "# is not set above) and to build the "mapjam helper" keybinds." >> ./quakelaunch.conf
-    echo "maplist=\"$maplist\"" >> ./quakelaunch.conf
-    echo >> ./quakelaunch.conf
-    echo "# You can override other options in here too; useful ones include quake (the" >> ./quakelaunch.conf
-    echo "# path to the Quake executable to use) and quakeargs (any other command-line" >> ./quakelaunch.conf
-    echo "# arguments)." >> ./quakelaunch.conf
-    echo >> ./quakelaunch.conf
-    echo "# The preview_readme_and_config option is set false after initial launch so" >> ./quakelaunch.conf
-    echo "# that the readme and config editor(s) won't appear on future launches." >> ./quakelaunch.conf
-    echo "preview_readme_and_config=false" >> ./quakelaunch.conf
+    cat <<- EOF > "$tempconf"
+	# The basegame_args option is a list of Quake arguments used to set a base
+	# gamedir or missionpack... such as -quoth or -hipnotic. The quakelaunch
+	# script has put its best guess here, but you can change it. If you don't want
+	# any such arguments then set it to an empty value. If you want to specify
+	# multiple arguments, enclose the list of arguments in doublequotes.
+	EOF
+    echo >> "$tempconf"
+    echo "basegame_args=\"$basegame_args\"" >> "$tempconf"
+    echo >> "$tempconf"
+    echo >> "$tempconf"
+    cat <<- EOF >> "$tempconf"
+	#* You can set and override other options in this file too!
+
+	#* The startmap option is the map name (without the .bsp extension) that will
+	#* be launched into, unless some other map is forced e.g. by a savegame
+	#* existing.
+
+	#* The maplist option is the list of all singleplayer maps that can/should be
+	#* playable in this gamedir. It will be used to find a startmap (if startmap
+	#* is not explicitly set in this file) and to build the mapjam helper keybinds.
+
+	#* If startmap and/or maplist are not set in this file, quakelaunch will
+	#* recalculate them each time you play this gamedir. That recalculation might
+	#* be handy if you will be adding/removing maps in this gamedir. On the other
+	#* hand you may want to explicitly set values for them here to fix a problem.
+
+	#* As examples, the commented-out lines below show the values for startmap and
+	#* maplist that the quakelaunch script has currently calculated:
+	EOF
+    echo >> "$tempconf"
+    echo "# startmap=\"$startmap\"" >> "$tempconf"
+    echo >> "$tempconf"
+    echo "# maplist=\"$maplist\"" >> "$tempconf"
+    echo >> "$tempconf"
+    echo >> "$tempconf"
+    cat <<- EOF >> "$tempconf"
+	#* Other options that might be useful to set in this file include quake (the
+	#* path to the Quake executable to use) and quakeargs (any other command-line
+	#* arguments). For example you could set quakeargs to a value of "-listen 16"
+	#* if this gamedir is a bots mod that must run as a listen server.
+	EOF
+    mv -f "$tempconf" ./quakelaunch.conf
+    conf_created=true
   fi
   # Start the readme viewer(s) and config editor.
   if [[ $preview_readme_and_config == "true" ]]
@@ -713,8 +728,26 @@ then
     $config_editor ./quakelaunch.conf
     source ./quakelaunch.conf
   fi
+  # If we just created this config, clean it up a bit by removing examples
+  # and then initialize the preview_readme_and_config value to false.
+  if [[ $conf_created == "true" ]]
+  then
+    grep -v -- "^#\*" ./quakelaunch.conf | grep -v -- "^\s*#\s*startmap=" | grep -v -- "^\s*#\s*maplist=" | sed 'N;/^\n$/D;P;D;' > "$tempconf"
+    cat <<- EOF >> "$tempconf"
+	# The preview_readme_and_config option is set false after initial launch so
+	# that the readme and config editor(s) won't appear on future launches.
+	EOF
+    echo >> "$tempconf"
+    echo "preview_readme_and_config=false" >> "$tempconf"
+    mv -f "$tempconf" ./quakelaunch.conf
+  fi
   # Let's run some Quake!
   cd "$quakedir"
+  if [[ -n "$startmap" && -z "$current_startmap" ]]
+  then
+    current_startmap="$startmap"
+    startmap_args="+map \"$current_startmap\""
+  fi
   if [[ "$valid_maplist" == "true" ]]
   then
     jamhelper=$(jam_helper "$basedir/$mod" "$maplist" "$current_startmap")
