@@ -151,9 +151,8 @@ function jam_config {
     loadmap="$2"
     startalias="alias jam jam_map_1"
     aliases=""
-    sorted_maplist=$(echo $maplist | tr ' ' '\n' | sort -f)
     i=1
-    for map in $sorted_maplist
+    for map in $maplist
     do
       if [[ "$map" =~ start$ ]]
       then
@@ -585,8 +584,8 @@ then
         maplist="$maplist $loosemaps"
       fi
       # Remove things that look like bmodels; remove "maps/" prefix and .bsp
-      # extension; remove any leading/trailing spaces.
-      maplist=$(echo "$maplist" | sed 's/ *maps\/b_[^ ]*\.bsp */ /gI' | sed 's/maps\/\([^ ]*\)\.bsp/\1/gI')
+      # extension; sort alphabetically; remove any leading/trailing spaces.
+      maplist=$(echo "$maplist" | sed 's/ *maps\/b_[^ ]*\.bsp */ /gI' | sed 's/maps\/\([^ ]*\)\.bsp/\1/gI' | tr ' ' '\n' | sort -f | tr '\n' ' ')
       maplist=${maplist##+([[:space:]])}
       maplist=${maplist%%+([[:space:]])}
     fi
