@@ -98,13 +98,7 @@ If the script can't figure out which map to load, just use the console as usual 
 
 ## Quoth and missionpacks
 
-If the gamedir contains a document that mentions using quoth, hipnotic, or rogue as a base gamedir, then "quakelaunch" will honor that when launching it. It will stop with an error if the necessary base is not present.
-
-If you have a gamedir that requires one of these base gamedirs but doesn't mention that fact in any of its docs, you can create a ".txt" file in the gamedir to trigger "quakelaunch" to use the correct base. The file should contain "-quoth", "-hipnotic", or "-rogue" accordingly. For example if you need a gamedir to use Quoth but it doesn't say that in its docs, you could do this inside the gamedir:
-```
-echo "-quoth" > basegame.txt
-```
-(I haven't yet found a need to do that though.)
+If the gamedir contains a document that mentions a dependency on quoth, hipnotic, or rogue, then "quakelaunch" will honor that when launching it. It will stop with an error if the necessary base gamedir is not present.
 
 ## Arcane Dimensions and Copper
 
@@ -122,23 +116,29 @@ If you try to launch a non-standalone gamedir that mentions Arcane Dimensions or
 * If you're set up to handle AD/Copper as a base gamedir, the gamedir will be launched accordingly.
 * Otherwise the gamedir will be launched normally without specifying any base. The script assumes you know what you're doing! (This might change in future releases.)
 
-Note that because the script just looks for occurences of "Arcane Dimensions" or "Copper" in the readme files, if for example the readme says something like "built for vanilla id1 but also tested with Copper" then the gamedir will get launched with Copper. I haven't found this to be a real problem yet (and I like Copper anyway) &mdash; but if something like this does happen, and you want to force the script to launch the gamedir in id1, then you can edit the readme to remove the offending reference.
+## Per-gamedir configs
 
-## Per-gamedir settings
+A "quakelaunch.conf" file inside a gamedir folder can be used to set behaviors specific to that gamedir. If such a file does not exist when a gamedir is launched, then the script will create it.
 
-Sometimes you may want to change the behavior of the quakelaunch script just for a particular gamedir. You can do this by putting a "quakelaunch.conf" file into that gamedir. Any settings in that file will take priority over those in the main configuration.
+You can edit this file as you wish. Many of the options in the main "quakelaunch.conf" file can affect how a gamedir is launched, and if you specify a value for any of those options in this gamedir-specific config then that value will override the value from the main config.
 
-Don't put every possible setting in such a file; just the ones you want to change.
+This file will also contain a "basegame_args" option that specifies how any base gamedir dependecies (described above) affect the launch arguments for Quake. You can edit this value if it looks like the script has made the wrong conclusions. For example, if you have a gamedir that requires Quoth but doesn't mention that fact in any of its docs, then the script will initially set the "basegame_args" value to emptystring (nothing) since it couldn't detect the dependency. In that case you would want to manually change the "basegame_args" value to "-quoth".
 
-For example, if a gamedir is a "bots" mod that requires being launched with listen-server settings, you could put a "quakelaunch.conf" file into that gamedir that only contains this line:
-```
-quakeargs="-listen 16"
-```
+You can also set a "quake_args" option in this file if you want to specify additional command-line arguments to use with this gamedir. For example, if a gamedir is a "bots" mod that requires being launched with listen-server settings, then in its gamedir-specific config you can insert a line that sets the "quake_args" option to a value of "-listen 16".
 
-Or if a gamedir doesn't work with your usual Quake engine and you need to use some other Quake executable with it, you could put a "quakelaunch.conf" file into that gamedir that only contains a line like this:
-```
-quake="/path/to/my/other/Quake/executable"
-```
+There are other options you might wish to set in this file. If you use the "readme and config preview" feature described below, you'll get to see more commentary about those options.
+
+## Readme and config preview
+
+If you set the value of "preview_readme_and_config" to true, this activates a feature that triggers on the first launch of any gamedir. Before Quake starts, you will get the chance to view any readme files or other documents in the gamedir. You will also get a chance to view and edit the gamedir-specific "quakelaunch.conf" file. Quake will not start until you have closed the editor window for that config file.
+
+So for example you could look at the readme to note any base gamedir dependencies. Then you could check the "basegame_args" value in the config to see if it is correct, and fix it if not.
+
+(Subsequent runs of the gamedir will skip the viewing/editing stuff and go straight to launching Quake.)
+
+If "preview_readme_and_config" is true, you must also provide a value for "config_editor". This value describes how to launch an editor program for the gamedir-specific "quakelaunch.conf" file. The comments in the main "quakelaunch.conf" file describe the requirements for how you set this up. In the provided example I've chosen to use the "gedit" editor, which is a nice GUI text editor available on many Linux variants. If you don't have gedit, you could install it ("sudo apt install gedit")... or use some other editor as long as you can meet the requirements.
+
+You can also provide values for txt_viewer, html_viewer, doc_viewer, and pdf_viewer to define how those document types can be viewed. In my example I use gedit again for .txt files, and xdg-open for all other file types to just use whatever the system default is.
 
 ## Mapjam helper
 

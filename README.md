@@ -36,6 +36,7 @@ Right-click on an archive (zip or rar or many other kinds) and select "Open with
 
 Right-click on a gamedir in your Quake directory and select "Open with Quake".
 * Common capitalization errors that break Linux play will be fixed.
+* On first launch, optionally preview any readme/docs files in the gamedir, and preview/edit the config that will be used to launch Quake.
 * If there are savegames, the gamedir will be activated in Quake and its most recent savegame loaded.
 * If no savegames, the gamedir will be activated in Quake and its start map (or only map) will be loaded.
 
