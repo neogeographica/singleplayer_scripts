@@ -489,7 +489,7 @@ then
   # we can figure out any required basegame from grepping docs.
   if [[ $calc_basegame_args == "true" ]]
   then
-    if grep -qi -- "-quoth\|-game quoth" *.txt *.htm* *readme* 2> /dev/null
+    if grep -qi -- "quoth" *.txt *.htm* *readme* 2> /dev/null
     then
       if [[ -d "$basedir"/quoth ]]
       then
