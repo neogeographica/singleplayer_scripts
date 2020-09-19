@@ -155,7 +155,7 @@ function jam_config {
     i=1
     for map in $sorted_maplist
     do
-      if [[ "$map" =~ start$ || "$map" =~ ^b_ ]]
+      if [[ "$map" =~ start$ ]]
       then
         continue
       fi
@@ -584,10 +584,11 @@ then
       then
         maplist="$maplist $loosemaps"
       fi
-      # Nuke any leading/trailing spaces; remove "maps/" and .bsp extensions.
+      # Remove things that look like bmodels; remove "maps/" prefix and .bsp
+      # extension; remove any leading/trailing spaces.
+      maplist=$(echo "$maplist" | sed 's/ *maps\/b_[^ ]*\.bsp */ /gI' | sed 's/maps\/\([^ ]*\)\.bsp/\1/gI')
       maplist=${maplist##+([[:space:]])}
       maplist=${maplist%%+([[:space:]])}
-      maplist=$(echo "$maplist" | sed 's/maps\/\([^ ]*\)\.bsp/\1/gI')
     fi
   fi
   # If startmap was not explicitly set in a gamedir-specific conf, determine
@@ -613,15 +614,6 @@ then
         if [[ "$maplist " =~ "start " ]]
         then
           startmap=$(echo " $maplist " | sed 's/.* \([^ ]*start\)\ .*/\1/I')
-        else
-          # Try excluding maps that appear to be bmodels, see if that
-          # leaves us with just one choice.
-          filtered=$(echo " $maplist" | sed 's/ b_[^ ]*//gI')
-          filtered="${filtered:1}"
-          if [[ $(echo "$filtered" | wc -w) -eq 1 ]]
-          then
-            startmap="$filtered"
-          fi
         fi
       fi
     fi
