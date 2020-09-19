@@ -677,8 +677,8 @@ then
     echo >> "$tempconf"
     cat <<- EOF >> "$tempconf"
 	#* Other options that might be useful to set in this file include quake (the
-	#* path to the Quake executable to use) and quakeargs (any other command-line
-	#* arguments). For example you could set quakeargs to a value of "-listen 16"
+	#* path to the Quake executable to use) and quake_args (any other command-line
+	#* arguments). For example you could set quake_args to a value of "-listen 16"
 	#* if this gamedir is a bots mod that must run as a listen server.
 	EOF
     mv -f "$tempconf" ./quakelaunch.conf
@@ -752,7 +752,7 @@ then
   then
     jamhelper=$(jam_helper "$basedir/$mod" "$maplist" "$current_startmap")
   fi
-  exec "$quake" -basedir "$basedir" $quakeargs $basegame_args -game "$mod" $startmap_args $jamhelper
+  exec "$quake" -basedir "$basedir" $quake_args $basegame_args -game "$mod" $startmap_args $jamhelper
 fi
 
 # If we got here, we couldn't figure out what to do.
