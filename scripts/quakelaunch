@@ -654,8 +654,9 @@ then
 	#* You can set and override other options in this file too!
 
 	#* The startmap option is the map name (without the .bsp extension) that will
-	#* be launched into, unless some other map is forced e.g. by a savegame
-	#* existing.
+	#* be launched into when no specific map is forced (by a savegame existing or
+	#* by double-clicking a bsp file). If it is set to an emptystring value then
+	#* no map will initially be loaded in that case.
 
 	#* The maplist option is the list of all singleplayer maps that can/should be
 	#* playable in this gamedir. It will be used to find a startmap (if startmap
