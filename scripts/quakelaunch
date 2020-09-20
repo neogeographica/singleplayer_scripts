@@ -698,32 +698,32 @@ then
     then
       for txtfile in $(ls -1d *.txt 2>/dev/null)
       do
-        $txt_viewer $txtfile &
+        (($txt_viewer $txtfile)&)
       done
       for readmefile in $(ls -1d !(*.*) 2>/dev/null | grep -i readme)
       do
-        $txt_viewer $readmefile &
+        (($txt_viewer $readmefile)&)
       done
     fi
     if [[ -n "$html_viewer" ]]
     then
       for htmlfile in $(ls -1d *.htm* 2>/dev/null)
       do
-        $html_viewer $htmlfile &
+        (($html_viewer $htmlfile)&)
       done
     fi
     if [[ -n "$doc_viewer" ]]
     then
       for docfile in $(ls -1d *.doc 2>/dev/null)
       do
-        $doc_viewer $docfile &
+        (($doc_viewer $docfile)&)
       done
     fi
     if [[ -n "$pdf_viewer" ]]
     then
       for pdffile in $(ls -1d *.pdf 2>/dev/null)
       do
-        $pdf_viewer $pdffile &
+        (($pdf_viewer $pdffile)&)
       done
     fi
     $config_editor ./quakelaunch.conf
