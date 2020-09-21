@@ -463,7 +463,6 @@ then
     if [[ "$maplist" != "" ]]
     then
       calc_maplist=false
-      valid_maplist=true
     fi
     if [[ "$startmap" != "" ]]
     then
@@ -588,6 +587,9 @@ then
       maplist=${maplist##+([[:space:]])}
       maplist=${maplist%%+([[:space:]])}
     fi
+  else
+      # If we got maplist from the gamedir config, just trust it.
+      valid_maplist=true
   fi
   # If startmap was not explicitly set in a gamedir-specific conf, determine
   # it now. We may or may not use this for launch (e.g. not if loading a
