@@ -468,7 +468,6 @@ then
     if [[ "$startmap" != "" ]]
     then
       calc_startmap=false
-      startmap_args="+map \"$startmap\""
     fi
     # Make preview_readme_and_config be false on future launches.
     if [[ "$preview_readme_and_config" != "false" ]]
