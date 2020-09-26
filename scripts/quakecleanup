@@ -6,7 +6,7 @@ source "$thisdir"/quakelaunch.conf
 
 shopt -s extglob
 
-# Choose from a random set of error beeps and play it.
+# Function to choose from a random set of error beeps and play it.
 function beep {
   if [[ -n "$beep_player" && ${#beepsound[@]} -ne 0 ]]
   then
@@ -14,7 +14,7 @@ function beep {
   fi
 }
 
-# Print a message. Then post it as a notification and/or beep.
+# Function to print a message. Then post it as a notification and/or beep.
 function message {
   echo $1
   if [[ -n "$notification_icon" ]]
@@ -24,30 +24,28 @@ function message {
   beep
 }
 
-# Print usage statement and beep.
+# Function to print usage statement and beep.
 function usage {
   message "usage: quakecleanup gamedir|foo.quake"
 }
 
-# Make sure the config has been populated.
-if [[ -z "$basedir" ]]
-then
-  message "necessary option(s) in quakelaunch.conf have not been specified"
-  exit 1
-fi
+# Function to make sure the config has been populated with what we need.
+function basic_validation {
+  if [[ -z "$basedir" ]]
+  then
+    message "necessary option(s) in quakelaunch.conf have not been specified"
+    exit 1
+  fi
+}
 
-# Take care of the simplest arguments cases:
-
-# Exactly one arg
+# Validate there's exactly one arg.
 if [[ -n "$2" || -z "$1" ]]
 then
   usage
   exit 1
 fi
 
-arg="$1"
-gamedir=""
-
+# Function to determine the directory a shortcut points at.
 function gamedir_for_shortcut {
   shortcut="$1"
   gamedir=$(cat "$shortcut")
@@ -55,11 +53,20 @@ function gamedir_for_shortcut {
   gamedir=${gamedir%%+([[:space:]])}
   if [[ -z "$gamedir" ]]
   then
+    basic_validation
     gamedir=$(basename "$shortcut")
-    gamedir="$basedir"/"${gamedir%.*}"
+    if [[ -z "$userdata_home" || "$install_to_userdata" != "true" ]]
+    then
+      gamedir="$basedir"/"${gamedir%.*}"
+    else
+      gamedir="$userdata_home"/"${gamedir%.*}"
+    fi
   fi
   echo "$gamedir"
 }
+
+arg="$1"
+gamedir=""
 
 if [[ -f "$arg" ]]
 then
@@ -73,30 +80,48 @@ then
 else
   gamedir="$arg"
 fi
+mod=$(basename "$gamedir")
+
+# Before we make any further decisions, do an initial source of any
+# quakelaunch.conf in the targeted directory to see if it has redefined
+# basedir or userdata_home.
+if [[ -f "$gamedir"/quakelaunch.conf ]]
+then
+  source "$gamedir"/quakelaunch.conf
+fi
 
 # There could theoretically be multiple shortcuts that point at this gamedir.
-# Anyway delete any shortcut in shortcuts_dir that points at it.
+# Delete any shortcut in shortcuts_dir that points at either basedir/mod or
+# userdata_home/mod.
 if [[ -n "$shortcuts_dir" && -d "$shortcuts_dir" ]]
 then
   for file in $(ls -1 "$shortcuts_dir"/*.quake 2> /dev/null)
   do
     target=$(gamedir_for_shortcut "$file")
-    if [[ "$target" == "$gamedir" ]]
+    if [[ "$target" == "$basedir"/"$mod" ]]
     then
       rm -f "$file"
+    else
+      if [[ -n "$userdata_home" && "$target" == "$userdata_home"/"$mod" ]]
+      then
+        rm -f "$file"
+      fi
     fi
   done
 fi
 
-# And delete the gamedir if it still exists. We'll be a little paranoid and
-# not delete directories that don't appear to be in a Quake installation.
-if [[ -n "$gamedir" && -d "$gamedir" ]]
+# Delete the corresponding subdirectory of basedir, unless installs are set to
+# happen under userdata_home.
+if [[ -z "$userdata_home" || "$install_to_userdata" != "true" ]]
 then
-  gamedirparent=$(dirname "$gamedir")
-  if [[ ! -d "$gamedirparent"/id1 ]]
+  if [[ -d "$basedir"/"$mod" ]]
   then
-    message "target directory is not inside a Quake installation; not deleting it"
-    exit 1
+    rm -rf "$basedir"/"$mod"
   fi
-  rm -rf "$gamedir"
+fi
+
+# If userdata_home is set, delete the corresponding subdirectory there.
+if [[ -n "$userdata_home" && -d "$userdata_home"/"$mod" ]]
+then
+  rm -rf "$userdata_home"/"$mod"
 fi

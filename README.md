@@ -54,7 +54,9 @@ For a smoother trip through a mapjam or speedmap pack: an in-game keybind to loa
 
 ## Uninstalling a gamedir
 
-(This is only helpful if you use ".quake" shortcuts.) Right-click on a gamedir and choose to open it with "Quake mod cleanup". The gamedir and any ".quake" shortcut to it will be deleted. Similarly you can do this on a ".quake" shortcut, to delete both the shortcut and the gamedir it points to.
+Right-click on a gamedir and choose to open it with "Quake mod cleanup". The gamedir and any ".quake" shortcut to it will be deleted. Similarly you can do this on a ".quake" shortcut, to delete both the shortcut and the gamedir it points to. If your Quake engine makes use of a [userdata directory](scripts/userdata.md) then the gamedir subdirectory there will be removed as well.
+
+(If you don't use ".quake" shortcuts or have a userdata directory then you don't care about this feature.)
 
 ## Optional Chrome browser integration
 
@@ -68,7 +70,7 @@ I like to put any Quake map release into its own gamedir, even vanilla bsp-only 
 
 > To evangelize briefly: Keeping each release in its own gamedir lets me see at a glance what I've currently installed, makes it obvious which savegames and bits of configuration are relevant to which releases, makes "uninstallation" braindead-simple, and also makes it possible to do some automated installation and launching with a pretty lightweight script.
 
-One consequence of this approach is that the auto-install feature *will not work* for non-standalone Arcane Dimensions and Copper releases, *unless* you are using a Quake engine like [FTE](http://fte.triptohell.info/) or [Quakespasm-Spiked](http://triptohell.info/moodles/qss/) that supports specifying multiple "game" directories to use when loading a mod or maps. See the "Arcane Dimensions and Copper" section of [scripts/README.md](scripts/README.md) for more details.
+One consequence is that non-standalone Arcane Dimensions and Copper releases installed this way cannot be launched *unless* you are using a Quake engine like [FTE](http://fte.triptohell.info/), [Quakespasm-Spiked](http://triptohell.info/moodles/qss/), [vkQuake](https://github.com/Novum/vkQuake) (after version 1.04.1), or [DarkPlaces](https://icculus.org/twilight/darkplaces/) that supports specifying multiple "game" directories to use when loading a mod or maps. See the "Arcane Dimensions and Copper" section of [scripts/README.md](scripts/README.md) for more details.
 
 ## Some assembly required
 

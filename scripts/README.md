@@ -61,6 +61,14 @@ The scripts are meant to be used through desktop integration, but you can also r
 
 The sections below cover some of the interesting parts of these behaviors that can affect how you want to set up the "quakelaunch.conf" config file, and how you will use the features once they are installed.
 
+## What is a "gamedir" really?
+
+Basically a gamedir is a directory whose name can be used with the "-game" argument when launching Quake, to make Quake see the files in that directory. In the original Quake and in many new Quake engines, this is simply a directory that exists within the "basedir" directory, i.e. next to "id1".
+
+In some Quake engines however, the directory for the gamedir may instead be located within a "userdata" directory, somewhere under your own home directory. Or there may be a directory of that name **both** in the basedir and **also** in the userdata, with Quake loading files from both locations. If your Quake engine makes use of a userdata directory then you'll need to set a couple of options in quakelaunch.conf accordingly. More about that in the [userdata](userdata.md) readme.
+
+When the text below talks about a "gamedir" it is referring to the directory under "basedir" as well as the userdata subdirectory of the same name (if that exists). If there's any confusion about what that might mean in a particular context then the [userdata](userdata.md) readme will hopefully clear that up. To be clear though, if your Quake engine doesn't do the userdata thing (e.g. if you're using an official Quakespasm build) then you can ignore all that userdata stuff.
+
 ## Shortcuts
 
 A shortcut is a file with the ".quake" extension. They're nice as a way to launch a Quake mod or maps with a double-click (once you've done the desktop integration). A directory full of shortcuts is basically your menu of Quake stuff you can play.
@@ -106,27 +114,25 @@ Some custom singleplayer releases make use of Arcane Dimensions or Copper, eithe
 
 A "standalone" release is detected if it has a progs.dat or any pak files. If this is the case then it will be installed and launched like any other mod, in its own gamedir.
 
-For a non-standalone release it's a little more complicated. As described in the top-level readme I like to keep each release in its own gamedir. Ideally I would want to put the new stuff in its own gamedir and use Arcane Dimensions or Copper as a base game directory that the new gamedir can build on... same as I do with content built for Quoth or the missionpacks. Many Quake engines don't have that feature, but I do know that [FTE](http://fte.triptohell.info/) and [Quakespasm-Spiked](http://triptohell.info/moodles/qss/) can do it, and I've included examples in the conf file that would work with those two engines. [DarkPlaces](https://icculus.org/twilight/darkplaces/) should also have this capability. If you have a Quake engine that can do it, you can set the relevant options in your "quakelaunch.conf" file.
+For a non-standalone release it's a little more complicated. As described in the top-level readme I like to keep each release in its own gamedir. So these AD/Copper releases should each go into their own gamedir and then be launched specifying the Arcane Dimensions or Copper gamedir as a dependency... same as we do with content built for Quoth or the missionpacks. Some Quake engines don't have that feature, but if you have a Quake engine that can do it, you can set the relevant options in your "quakelaunch.conf" file. I do know that [FTE](http://fte.triptohell.info/), [Quakespasm-Spiked](http://triptohell.info/moodles/qss/), [vkQuake](https://github.com/Novum/vkQuake) (after version 1.04.1), and [DarkPlaces](https://icculus.org/twilight/darkplaces/) can do it, and I've included examples in the conf file that work with those engines.
 
-(BTW if you are making your own build of Quakespasm or vkQuake, [multigame-support.md](multigame-support.md) describes how you can add this capability to those Quake engines.)
+(BTW if you are making your own build of Quakespasm, [multigame-support.md](multigame-support.md) describes how you can add this capability to that Quake engine. vkQuake users may also want to check that document if running vkQuake 1.04.1 or earlier.)
 
-So if you try to install a non-standalone Arcane Dimensions or Copper release, different things will happen based on your configuration:
-* If you're set up (in "quakelaunch.conf") to handle AD/Copper as a base gamedir, the non-standalone release will be installed in its own gamedir and launched accordingly.
-* Otherwise, the script will exit without doing the installation, generating a desktop notification that tells you why it couldn't auto-install. You'll need to install the non-standalone release manually, by merging files into the main AD/Copper mod directory or whatever you would normally do.
-
-If you try to launch a non-standalone gamedir that mentions Arcane Dimensions or Copper in its docs:
-* If you're set up to handle AD/Copper as a base gamedir, the gamedir will be launched accordingly.
-* Otherwise the gamedir will be launched normally without specifying any base. The script assumes you know what you're doing! (This might change in future releases.)
+Therefore if you install a non-standalone Arcane Dimensions or Copper release, it will go into its own gamedir just like any other map/mod release. Then if you try to launch that gamedir, what happens next will depend on your configuration:
+* If you're set up in quakelaunch.conf to handle AD/Copper as a base gamedir, the gamedir for this release will be launched accordingly (using AD/Copper as a base). 
+* Otherwise you'll get an error message and the gamedir will not be launched. You can override this behavior if you want, by editing the per-gamedir config (see below).
 
 ## Per-gamedir configs
 
 A "quakelaunch.conf" file inside a gamedir folder can be used to set behaviors specific to that gamedir. If such a file does not exist when a gamedir is launched, then the script will create it.
 
+**Note:** If your Quake engine makes use of a "userdata" directory, this gamedir-specific quakelaunch.conf file will end up in the relevant subdirectory there. See [userdata.md](userdata.md) for details.
+
 You can edit this file as you wish. Many of the options in the main "quakelaunch.conf" file can affect how a gamedir is launched, and if you specify a value for any of those options in this gamedir-specific config then that value will override the value from the main config.
 
 This file will also contain a "basegame_args" option that specifies how any base gamedir dependecies (described above) affect the launch arguments for Quake. You can edit this value if it looks like the script has made the wrong conclusions. For example, if you have a gamedir that requires Quoth but doesn't mention that fact in any of its docs, then the script will initially set the "basegame_args" value to emptystring (nothing) since it couldn't detect the dependency. In that case you would want to manually change the "basegame_args" value to "-quoth".
 
-You can also set a "quake_args" option in this file if you want to specify additional command-line arguments to use with this gamedir. For example, if a gamedir is a "bots" mod that requires being launched with listen-server settings, then in its gamedir-specific config you can insert a line that sets the "quake_args" option to a value of "-listen 16".
+You can also set a "extra_quake_args" option in this file if you want to specify additional command-line arguments to use with this gamedir. For example, if a gamedir is a "bots" mod that requires being launched with listen-server settings, then in its gamedir-specific config you can insert a line that sets the "extra_quake_args" option to a value of "-listen 16".
 
 There are other options you might wish to set in this file. If you use the "readme and config preview" feature described below, you'll get to see more commentary about those options.
 

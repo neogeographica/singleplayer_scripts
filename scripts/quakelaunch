@@ -8,7 +8,7 @@ quakedir=$(dirname "$quake")
 # Going to use nocaseglob to do some case-insensitive file listing/matching.
 shopt -s nocaseglob extglob
 
-# Choose from a random set of error beeps and play it.
+# Function to choose from a random set of error beeps and play it.
 function beep {
   if [[ -n "$beep_player" && ${#beepsound[@]} -ne 0 ]]
   then
@@ -16,7 +16,7 @@ function beep {
   fi
 }
 
-# Print a message. Then post it as a notification and/or beep.
+# Function to print a message. Then post it as a notification and/or beep.
 function message {
   echo $1
   if [[ -n "$notification_icon" ]]
@@ -26,17 +26,19 @@ function message {
   beep
 }
 
-# Print usage statement and beep.
+# Function to print usage statement and beep.
 function usage {
   message "usage: quakelaunch [archive|gamedir|foo.bsp|foo.quake]"
 }
 
-# Make sure the config has been populated.
-if [[ -z "$basedir" || -z "$quake" ]]
-then
-  message "necessary option(s) in quakelaunch.conf have not been specified"
-  exit 1
-fi
+# Function to make sure the config has been populated with what we need.
+function basic_validation {
+  if [[ -z "$basedir" || -z "$quake" ]]
+  then
+    message "necessary option(s) in quakelaunch.conf have not been specified"
+    exit 1
+  fi
+}
 
 # Take care of the simplest arguments cases:
 
@@ -50,25 +52,26 @@ fi
 # Simple launch if no args.
 if [[ -z "$1" ]]
 then
+  basic_validation
   cd "$quakedir"
   exec "$quake" -basedir "$basedir"
 fi
 
 # OK we have more complicated stuff to do! A few more utility functions:
 
-# Function to see if the cwd is in a gamedir with a pak file or (qw)progs.dat.
+# Function to see if the given dirs contain a pak file or (qw)progs.dat.
 function is_standalone {
   # XXX If expak is installed we could grope the paks to see if they contain
   # a progs.dat. However it would generally be really odd for a release to have
   # a pak file at all if it's intended to be dropped into some other mod, so
   # that's probably not necessary.
-  paksfound=$(find . -type f -iname '*.pak')
+  paksfound=$(find "$@" -type f -iname '*.pak')
   if [[ -n "$paksfound" ]]
   then
     echo true
     return
   fi
-  progsfound=$(find . -type f -iname '*progs.dat')
+  progsfound=$(find "$@" -type f -iname '*progs.dat')
   if [[ -n "$progsfound" ]]
   then
     echo true
@@ -77,7 +80,51 @@ function is_standalone {
   echo false
 }
 
-# Function to force known-by-Quake subdirectories to lowercase.
+# Function to check if a gamedir exists and qualifies as "standalone".
+function is_standalone_gamedir {
+  checkdir="$1"
+  if [[ -z "$userdata_home" ]]
+  then
+    is_standalone "$basedir"/"$checkdir"
+  else
+    is_standalone "$basedir"/"$checkdir" "$userdata_home"/"$checkdir"
+  fi
+}
+
+# Function to check if a pattern is present in "document" files in a gamedir.
+function docscheck {
+  pattern="$1"
+  checkdir="$2"
+  if [[ -z "$userdata_home" ]]
+  then
+    grepdirs=( "$basedir"/"$checkdir" )
+  else
+    grepdirs=( "$basedir"/"$checkdir" "$userdata_home"/"$checkdir" )
+  fi
+  for dir in "${grepdirs[@]}"
+  do
+    if grep -qi -- "$pattern" "$dir"/*.txt "$dir"/*.htm* "$dir"/*readme* 2> /dev/null
+    then
+      echo true
+      return
+    fi
+  done
+  echo false
+}
+
+# Function to return a list of files with a given extension in a gamedir.
+function fileslist {
+  extension="$1"
+  checkdir="$2"
+  if [[ -z "$userdata_home" ]]
+  then
+    ls -1d "$basedir"/"$checkdir"/*.$extension 2>/dev/null
+  else
+    ls -1d "$basedir"/"$checkdir"/*.$extension "$userdata_home"/"$checkdir"/*.$extension 2>/dev/null
+  fi
+}
+
+# Function to force known-by-Quake subdirectories in cwd to lowercase.
 # Defining knowndirs here for reference since it will also be used elsewhere.
 # For simplicity the recap function just hardcodes the same set of dirs.
 knowndirs="gfx locs maps music particles progs skins sound textures"
@@ -95,24 +142,30 @@ function recap_dirs {
   mv [Tt]extures textures 2>/dev/null
 }
 
-# Function to force some filenames (or just extensions) to lowercase. Quake
-# assumes lowercase extensions for: pak/dem/sav/dat files, stuff in the maps dir,
-# stuff in the locs dir, and stuff in the music dir. In the case of pak files
-# and dat files we'll lowercase the whole name.
+# Function to force some filenames (or just extensions) in cwd to lowercase.
+# Quake assumes lowercase extensions for: pak/dem/sav/dat files, stuff in the
+# maps dir, stuff in the locs dir, and stuff in the music dir. In the case of
+# pak files and dat files we'll lowercase the whole name.
 function recap_files {
   pakfiles=$(ls -1d *.pak *.dat 2>/dev/null)
-  for file in $pakfiles
-  do
-    goodfile=$(echo $file | tr '[:upper:]' '[:lower:]')
-    mv "$file" "$goodfile" 2>/dev/null
-  done
+  if [[ -n "$pakfiles" ]]
+  then
+    while IFS= read -r file
+    do
+      goodfile=$(echo $file | tr '[:upper:]' '[:lower:]')
+      mv "$file" "$goodfile" 2>/dev/null
+    done <<< "$pakfiles"
+  fi
   extfiles=$(ls -1d *.dem *.sav locs/*.* maps/*.* music/*.* 2>/dev/null)
-  for file in $extfiles
-  do
-    filebase=${file%.*}
-    fileext=$(echo ${file##*.} | tr '[:upper:]' '[:lower:]')
-    mv "$file" "$filebase".$fileext 2>/dev/null
-  done
+  if [[ -n "$extfiles" ]]
+  then
+    while IFS= read -r file
+    do
+      filebase=${file%.*}
+      fileext=$(echo ${file##*.} | tr '[:upper:]' '[:lower:]')
+      mv "$file" "$filebase".$fileext 2>/dev/null
+    done <<< "$extfiles"
+  fi
 }
 
 # XXX Note that this script doesn't (and can't easily) fix cases where
@@ -152,6 +205,8 @@ function jam_config {
     startalias="alias jam jam_map_1"
     aliases=""
     i=1
+    # Assuming there are no spaces in map names here; other things would break
+    # too if there were.
     for map in $maplist
     do
       if [[ "$map" =~ start$ ]]
@@ -183,7 +238,7 @@ function jam_config {
 # return the Quake command line args to execute it. Second arg is maplist,
 # optional third arg is a specific map being launched.
 function jam_helper {
-  gamedir="$1"
+  dir="$1"
   maplist="$2"
   loadmap="$3"
   cfg=$(jam_config "$maplist" "$loadmap")
@@ -191,7 +246,7 @@ function jam_helper {
   then
     echo ""
   else
-    echo "$cfg" > "$gamedir"/jam_helper.cfg
+    echo "$cfg" > "$dir"/jam_helper.cfg
     echo "+exec jam_helper.cfg"
   fi
 }
@@ -201,32 +256,42 @@ function jam_helper {
 arg="$1"
 maplist=""
 basegame_args=""
+basegame_error=""
 startmap=""
 current_startmap=""
 startmap_args=""
 jamhelper=""
 bsp=""
 
-# First handle any ".quake" shortcut.
+# First handle any ".quake" shortcut. This should change the argument into
+# a directory.
 if [[ -f "$arg" && "${arg##*.}" == "quake" ]]
 then
-  # If the file has content, treat that content as the arg. Otherwise treat
-  # $basedir/$argbasename as the arg.
+  # If the file has content, treat that content as the arg. Otherwise we'll
+  # derive the arg from current basedir and userdata settings.
   shortcut=$(cat "$arg")
   shortcut=${shortcut##+([[:space:]])}
   shortcut=${shortcut%%+([[:space:]])}
   if [[ -z "$shortcut" ]]
   then
+    basic_validation
     arg=$(basename "$arg")
-    arg="$basedir"/"${arg%.*}"
+    if [[ -z "$userdata_home" || "$install_to_userdata" != "true" ]]
+    then
+      arg="$basedir"/"${arg%.*}"
+    else
+      arg="$userdata_home"/"${arg%.*}"
+    fi
   else
     arg="$shortcut"
   fi
 fi
 
-# If the argument is a file, we have some things to figure out before launch.
+# If the argument is still considered to be a file, we have some things to
+# figure out before launch.
 if [[ -f "$arg" ]]
 then
+  basic_validation
   # We don't do file case-fixing until we're sure we're in a gamedir (later),
   # so use case-insensitive match to check the extension here.
   if [[ "${arg##*.}" =~ ^bsp$ ]]
@@ -268,31 +333,6 @@ then
       fi
       exit 1
     fi
-    cd "$tmpdir"
-    # If readme mentions Copper or Arcane Dimensions, it's not clear how
-    # we should install this, unless it is itself a standalone mod.
-    # Exception if we have defined the ability to use copper/ad as a basegame.
-    if [[ -z "$ad_basegame_args" ]]
-    then
-      # Also match singular "Arcane Dimension" since some folks call it that.
-      ad_found=$(find . -type f \( -iname '*.txt' -o -iname '*.htm*' -o -iname '*readme*' \) -exec grep -i "arcane dimension" {} \;)
-      if [[ -n "$ad_found" && $(is_standalone) == "false" ]]
-      then
-        rm -rf "$tmpdir"
-        message "Archive contains a text file that mentions Arcane Dimensions. It's not clear how to auto-install this, so bailing out."
-        exit 1
-      fi
-    fi
-    if [[ -z "$copper_basegame_args" ]]
-    then
-      copper_found=$(find . -type f \( -iname '*.txt' -o -iname '*.htm*' -o -iname '*readme*' \) -exec grep -i copper {} \;)
-      if [[ -n "$copper_found" && $(is_standalone) == "false" ]]
-      then
-        rm -rf "$tmpdir"
-        message "Archive contains a text file that mentions Copper. It's not clear how to auto-install this, so bailing out."
-        exit 1
-      fi
-    fi
     # Move the extracted contents to a new gamedir, named after the archive.
     destdir=$(basename "$arg")
     destdir=${destdir%%.*}
@@ -302,7 +342,12 @@ then
         # directory name "quoth".
         destdir=quoth
     fi
-    destdir="$basedir"/"$destdir"
+    if [[ -z "$userdata_home" || "$install_to_userdata" != "true" ]]
+    then
+      destdir="$basedir"/"$destdir"
+    else
+      destdir="$userdata_home"/"$destdir"
+    fi
     mv -T "$tmpdir" "$destdir"
     if [[ $? -ne 0 ]]
     then
@@ -366,6 +411,8 @@ then
           exit 1
         fi
       fi
+      # Assuming there are no spaces in map names here; other things would
+      # break too if there were.
       mv $mapsfiles $mapsdir
     fi
     locsfiles=$(ls -1d *.loc 2>/dev/null)
@@ -384,6 +431,8 @@ then
           exit 1
         fi
       fi
+      # Assuming there are no spaces in loc names here; other things would
+      # break too if there were.
       mv $locsfiles $locsdir
     fi
     # Tidy up.
@@ -431,33 +480,81 @@ fi
 # outside of this script.
 if [[ -d "$arg" ]]
 then
-  tempconf=./quakelaunch.conf.$$
   gamedir="$arg"
   gamedirparent=$(dirname "$gamedir")
-  # Allow running gamedirs outside the normal basedir if it looks like a
-  # valid Quake install.
-  if [[ ! -d "$gamedirparent"/id1 ]]
-  then
-    message "target directory is not inside a Quake installation"
-    exit 1
-  fi
-  basedir="$gamedirparent"
   mod=$(basename "$gamedir")
-  cd "$gamedir"
-  # Allow gamedir-specific override of quakelaunch.conf stuff.
+  # Before we make any further decisions, do an initial source of any
+  # quakelaunch.conf in the targeted directory to see if it has redefined
+  # basedir or userdata_home.
+  if [[ -f "$gamedir"/quakelaunch.conf ]]
+  then
+    source "$gamedir"/quakelaunch.conf
+  fi
+  basic_validation
+  # If this directory is not under basedir or (if relevant) userdata_home, we
+  # can't deal with it.
+  if [[ "$gamedirparent" != "$basedir" ]]
+  then
+    if [[ -z "$userdata_home" ]]
+    then
+      message "target directory is not within the Quake basedir \"$basedir\""
+      exit 1
+    fi
+    if [[ "$gamedirparent" != "$userdata_home" ]]
+    then
+      message "target directory is not within the Quake basedir \"$basedir\" or userdata_home \"$userdata_home\""
+      exit 1
+    fi
+  fi
+  # Now handle the override of all other quakelaunch.conf stuff. This will
+  # probably involve re-sourcing the conf we already sourced above, but that's
+  # fine... helps us make sure we've sourced things in the right order.
   calc_basegame_args=true
   calc_maplist=true
   calc_startmap=true
-  if [[ -f ./quakelaunch.conf ]]
+  has_conf=false
+  has_superconf=false
+  if [[ -n "$userdata_home" ]]
   then
-    # Pick up any variable overrides.
-    source ./quakelaunch.conf
-    # For certain overrides, note that we should NOT try to calculate values
-    # for these vars below.
-    # basegame_args could be set to anything, including empty.
-    if grep -q -- "^\s*basegame_args=" ./quakelaunch.conf
+    mkdir -p "$userdata_home"/"$mod"
+    conf="$userdata_home"/"$mod"/quakelaunch.conf
+    # If we're using a userdata_home but there is also a quakelaunch.conf in
+    # the subdirectory of basedir, we can't ignore it. We'll source it first
+    # and then override it with any conf from userdata.
+    superconf="$basedir"/"$mod"/quakelaunch.conf
+    if [[ -f "$superconf" ]]
     then
-      calc_basegame_args=false
+      has_superconf=true
+      source "$superconf"
+    fi
+  else
+    conf="$basedir"/"$mod"/quakelaunch.conf
+  fi
+  tempconf="$conf".$$
+  if [[ -f "$conf" ]]
+  then
+    has_conf=true
+    source "$conf"
+  fi
+  basic_validation
+  # Everything has been sourced. For certain overrides, note that we should
+  # NOT try to calculate values for these vars below.
+  if [[ $has_conf == "true" || $has_superconf == "true" ]]
+  then
+    # basegame_args could be set to anything, including empty.
+    if [[ $has_superconf == "true" ]]
+    then
+      if grep -q -- "^\s*basegame_args=" "$superconf"
+      then
+        calc_basegame_args=false
+      fi
+    fi
+    if [[ $has_conf == "true" ]]
+    then
+      if grep -q -- "^\s*basegame_args=" "$conf"
+      then
+        calc_basegame_args=false
+      fi
     fi
     # maplist and startmap only make sense to set to nonempty values.
     if [[ "$maplist" != "" ]]
@@ -468,78 +565,72 @@ then
     then
       calc_startmap=false
     fi
-    # Make preview_readme_and_config be false on future launches.
-    if [[ "$preview_readme_and_config" != "false" ]]
+    # If there's an existing config (not "superconf"), make sure that
+    # preview_readme_and_config will be false on future launches.
+    if [[ $has_conf == "true" ]]
     then
-      grep -v -- "^\s*preview_readme_and_config=" ./quakelaunch.conf > "$tempconf"
-      echo "preview_readme_and_config=false" >> "$tempconf"
-      mv -f "$tempconf" ./quakelaunch.conf
+      if [[ "$preview_readme_and_config" != "false" ]]
+      then
+        grep -v -- "^\s*preview_readme_and_config=" "$conf" > "$tempconf"
+        echo "preview_readme_and_config=false" >> "$tempconf"
+        mv -f "$tempconf" "$conf"
+      fi
     fi
   fi
   # Take care of any obvious capitalization gotchas.
   if [[ $fix_capitalization == "true" ]]
   then
-    recap_dirs
-    recap_files
+    if [[ -d "$basedir"/"$mod" ]]
+    then
+      pushd "$basedir"/"$mod" > /dev/null
+      recap_dirs
+      recap_files
+      popd > /dev/null
+    fi
+    if [[ -n "$userdata_home" ]]
+    then
+      if [[ -d "$userdata_home"/"$mod" ]]
+      then
+        pushd "$userdata_home"/"$mod" > /dev/null
+        recap_dirs
+        recap_files
+        popd > /dev/null
+      fi
+    fi
   fi
   # If basegame_args was not explicitly set in a gamedir-specific conf, see if
-  # we can figure out any required basegame from grepping docs.
-  if [[ $calc_basegame_args == "true" ]]
+  # we can figure out any required basegame from grepping docs. (Only do this
+  # if the mod is not "standalone".)
+  if [[ $calc_basegame_args == "true" && $(is_standalone_gamedir "$mod") == "false" ]]
   then
-    if grep -qi -- "quoth" *.txt *.htm* *readme* 2> /dev/null
+    if [[ $(docscheck "quoth" "$mod") == "true" ]]
     then
-      if [[ -d "$basedir"/quoth ]]
-      then
-        basegame_args=-quoth
-      else
-        message "requires quoth basegame but quoth is not installed"
-        exit 1
-      fi
+      basegame_args=-quoth
     else
-      if grep -qi -- "-hipnotic\|-game hipnotic" *.txt *.htm* *readme* 2> /dev/null
+      if [[ $(docscheck "-hipnotic\|-game hipnotic" "$mod") == "true" ]]
       then
-        if [[ -d "$basedir"/hipnotic ]]
-        then
-          basegame_args=-hipnotic
-        else
-          message "requires hipnotic basegame but hipnotic is not installed"
-          exit 1
-        fi
+        basegame_args=-hipnotic
       else
-        if grep -qi -- "-rogue\|-game rogue" *.txt *.htm* *readme* 2> /dev/null
+        if [[ $(docscheck "-rogue\|-game rogue" "$mod") == "true" ]]
         then
-          if [[ -d "$basedir"/rogue ]]
-          then
-            basegame_args=-rogue
-          else
-            message "requires rogue basegame but rogue is not installed"
-            exit 1
-          fi
+          basegame_args=-rogue
         else
-          if [[ -n "$ad_basegame_args" ]] && grep -qi "arcane dimension" *.txt *.htm* *readme* 2> /dev/null
+          if [[ $(docscheck "arcane dimension" "$mod") == "true" ]]
           then
-            if [[ $(is_standalone) == "false" ]]
+            if [[ -n "$ad_basegame_args" ]]
             then
-              if [[ -z "$ad_gamedir" || -d "$basedir"/"$ad_gamedir" ]]
-              then
-                basegame_args=$ad_basegame_args
-              else
-                message "requires $ad_gamedir basegame but $ad_gamedir is not installed"
-                exit 1
-              fi
+              basegame_args=$ad_basegame_args
+            else
+              basegame_error="ad"
             fi
           else
-            if [[ -n "$copper_basegame_args" ]] && grep -qi "copper" *.txt *.htm* *readme* 2> /dev/null
+            if [[ $(docscheck "copper" "$mod") == "true" ]]
             then
-              if [[ $(is_standalone) == "false" ]]
+              if [[ -n "$copper_basegame_args" ]]
               then
-                if [[ -z "$copper_gamedir" || -d "$basedir"/"$copper_gamedir" ]]
-                then
-                  basegame_args=$copper_basegame_args
-                else
-                  message "requires $copper_gamedir basegame but $copper_gamedir is not installed"
-                  exit 1
-                fi
+                basegame_args=$copper_basegame_args
+              else
+                basegame_error="copper"
               fi
             fi
           fi
@@ -552,14 +643,19 @@ then
   then
     # First see if we can look for maps inside any pak files.
     valid_maplist=true
-    paks=$(ls -1d *.pak 2>/dev/null | tr '\n' ' ')
+    if [[ -z "$userdata_home" ]]
+    then
+      paks=$(ls -1d "$basedir"/"$mod"/*.pak 2>/dev/null)
+    else
+      paks=$(ls -1d "$basedir"/"$mod"/*.pak "$userdata_home"/"$mod"/*.pak 2>/dev/null)
+    fi
     if [[ -n "$paks" ]]
     then
       # If the Python module expak is installed, use that to list maps inside
       # the paks.
       if [[ $expak_installed == "true" ]]
       then
-        paklist=$(echo $paks | sed 's/ /", "/g' | sed 's/\(.*\)/"\1"/')
+        paklist=$(echo "$paks" | sed 's/\(.*\)/"\1"/' | tr '\n' ' ' | sed 's/" "/","/g')
         maplist=$(python -c "import expak;print(' '.join([r for r in expak.resource_names([$paklist]) if r.lower().startswith('maps/')]))" 2>/dev/null)
         if [[ $? -ne 0 ]]
         then
@@ -576,14 +672,21 @@ then
     # and add those to our list.
     if [[ "$valid_maplist" == "true" ]]
     then
-      loosemaps=$(ls -1d maps/*.bsp 2>/dev/null | tr '\n' ' ')
+      if [[ -z "$userdata_home" ]]
+      then
+        loosemaps=$(ls -1d "$basedir"/"$mod"/maps/*.bsp 2>/dev/null | tr '\n' ' ')
+      else
+        loosemaps=$(ls -1d "$basedir"/"$mod"/maps/*.bsp "$userdata_home"/"$mod"/maps/*.bsp 2>/dev/null | tr '\n' ' ')
+      fi
       if [[ -n "$loosemaps" ]]
       then
+        # Assuming there are no spaces in map names here; other things would
+        # break too if there were.
         maplist="$maplist $loosemaps"
       fi
       # Remove things that look like bmodels; remove "maps/" prefix and .bsp
       # extension; sort alphabetically; remove any leading/trailing spaces.
-      maplist=$(echo "$maplist" | sed 's/ *maps\/b_[^ ]*\.bsp */ /gI' | sed 's/maps\/\([^ ]*\)\.bsp/\1/gI' | tr ' ' '\n' | sort -f | tr '\n' ' ')
+      maplist=$(echo "$maplist" | sed 's/ *[^ ]*maps\/b_[^ ]*\.bsp */ /gI' | sed 's/[^ ]*maps\/\([^ ]*\)\.bsp/\1/gI' | tr ' ' '\n' | sort -f | uniq | tr '\n' ' ')
       maplist=${maplist##+([[:space:]])}
       maplist=${maplist%%+([[:space:]])}
     fi
@@ -629,18 +732,30 @@ then
     current_startmap="${bsp%.*}"
     startmap_args="+map \"$current_startmap\""
   else
-    lastsave=$(ls -1dt *.sav 2>/dev/null | head -1)
+    if [[ -z "$userdata_home" ]]
+    then
+      lastsave=$(ls -1dt "$basedir"/"$mod"/*.sav 2>/dev/null | head -1)
+    else
+      lastsave=$(ls -1dt "$basedir"/"$mod"/*.sav "$userdata_home"/"$mod"/*.sav 2>/dev/null | head -1)
+    fi
     if [[ -n "$lastsave" ]]
     then
-      current_startmap=$(savemap "$basedir/$mod/$lastsave")
-      startmap_args="+load \"${lastsave%.*}\""
+      current_startmap=$(savemap "$lastsave")
+      startmap_args="+load \"$(basename ${lastsave%.*})\""
     fi
   fi
   # Save our calculated args if necessary.
   conf_created=false
-  if [[ ! -f ./quakelaunch.conf ]]
+  if [[ $has_conf == "false" ]]
   then
-    cat <<- EOF > "$tempconf"
+    echo "#* You are creating: \"$conf\"" > "$tempconf"
+    echo "#*" >> "$tempconf"
+    if [[ $has_superconf == "true" ]]
+    then
+      echo "#* WARNING, a conf file also exists at: \"$superconf\"" >> "$tempconf"
+      echo "#*" >> "$tempconf"
+    fi
+    cat <<- EOF >> "$tempconf"
 	# The basegame_args option is a list of Quake arguments used to set a base
 	# gamedir or missionpack... such as -quoth or -hipnotic. The quakelaunch
 	# script has put its best guess here, but you can change it. If you don't want
@@ -650,9 +765,37 @@ then
     echo >> "$tempconf"
     echo "basegame_args=\"$basegame_args\"" >> "$tempconf"
     echo >> "$tempconf"
+    if [[ $basegame_error != "" ]]
+    then
+      if [[ $basegame_error == "ad" ]]
+      then
+        cat <<- EOF >> "$tempconf"
+	# Gamedir contains a doc that mentions Arcane Dimensions. It's unclear how
+	# to launch this since ad_basegame_args is undefined in quakelaunch.conf.
+	# You may need to manually merge the contents of this gamedir into your
+	# Arcane Dimensions gamedir, and then launch Arcane Dimensions.
+	EOF
+      fi
+      if [[ $basegame_error == "copper" ]]
+      then
+        cat <<- EOF >> "$tempconf"
+	# Gamedir contains a doc that mentions Copper. It's unclear how to launch
+	# this since copper_basegame_args is undefined in quakelaunch.conf.
+	# You may need to manually merge the contents of this gamedir into your
+	# Copper gamedir, and then launch Copper.
+	EOF
+      fi
+      cat <<- EOF >> "$tempconf"
+	# If you think it's OK for quakelaunch to launch this gamedir (maybe because
+	# you have fixed some things) then you can remove the line below that is
+	# setting basegame_error.
+	EOF
+      echo "basegame_error=\"$basegame_error\"" >> "$tempconf"
+    fi
+    echo >> "$tempconf"
     echo >> "$tempconf"
     cat <<- EOF >> "$tempconf"
-	#* You can set and override other options in this file too!
+	# You can set and override other options in this file too!
 
 	#* The startmap option is the map name (without the .bsp extension) that will
 	#* be launched into when no specific map is forced (by a savegame existing or
@@ -679,11 +822,18 @@ then
     echo >> "$tempconf"
     cat <<- EOF >> "$tempconf"
 	#* Other options that might be useful to set in this file include quake (the
-	#* path to the Quake executable to use) and quake_args (any other command-line
-	#* arguments). For example you could set quake_args to a value of "-listen 16"
+	#* path to the Quake executable to use), quake_args (command-line arguments
+	#* to REPLACE any specified in the main config), and extra_quake_args
+	#* (command-line arguments to ADD TO any specified in the main config).
+	#* For example you could set extra_quake_args to a value of "-listen 16"
 	#* if this gamedir is a bots mod that must run as a listen server.
+
+	#* The commented-out line below shows the current value of quake_args as
+	#* set by the main config:
 	EOF
-    mv -f "$tempconf" ./quakelaunch.conf
+    echo >> "$tempconf"
+    echo "# quake_args=\"$quake_args\"" >> "$tempconf"
+    mv -f "$tempconf" "$conf"
     conf_created=true
   fi
   # Start the readme viewer(s) and config editor.
@@ -697,51 +847,134 @@ then
     # Spawn readme viewer(s) as necessary.
     if [[ -n "$txt_viewer" ]]
     then
-      for txtfile in $(ls -1d *.txt 2>/dev/null)
-      do
-        (($txt_viewer $txtfile)&)
-      done
-      for readmefile in $(ls -1d !(*.*) 2>/dev/null | grep -i readme)
-      do
-        (($txt_viewer $readmefile)&)
-      done
+      txtfiles=$(fileslist "txt" "$mod")
+      if [[ -n "$txtfiles" ]]
+      then
+        while IFS= read -r file
+        do
+          (($txt_viewer "$file")&)
+        done <<< "$txtfiles"
+      fi
+      pushd "$basedir"/"$mod" > /dev/null
+      readmefiles=$(ls -1d !(*.*) 2>/dev/null | grep -i readme)
+      popd > /dev/null
+      if [[ -n "$readmefiles" ]]
+      then
+        while IFS= read -r file
+        do
+          (($txt_viewer "$basedir"/"$mod"/"$file")&)
+        done <<< "$readmefiles"
+      fi
     fi
     if [[ -n "$html_viewer" ]]
     then
-      for htmlfile in $(ls -1d *.htm* 2>/dev/null)
-      do
-        (($html_viewer $htmlfile)&)
-      done
+      htmlfiles=$(fileslist "htm*" "$mod")
+      if [[ -n "$htmlfiles" ]]
+      then
+        while IFS= read -r file
+        do
+          (($html_viewer "$file")&)
+        done <<< "$htmlfiles"
+      fi
     fi
     if [[ -n "$doc_viewer" ]]
     then
-      for docfile in $(ls -1d *.doc 2>/dev/null)
-      do
-        (($doc_viewer $docfile)&)
-      done
+      docfiles=$(fileslist "doc" "$mod")
+      if [[ -n "$docfiles" ]]
+      then
+        while IFS= read -r file
+        do
+          (($doc_viewer "$file")&)
+        done <<< "$docfiles"
+      fi
     fi
     if [[ -n "$pdf_viewer" ]]
     then
-      for pdffile in $(ls -1d *.pdf 2>/dev/null)
-      do
-        (($pdf_viewer $pdffile)&)
-      done
+      pdffiles=$(fileslist "pdf" "$mod")
+      if [[ -n "$pdffiles" ]]
+      then
+        while IFS= read -r file
+        do
+          (($pdf_viewer "$file")&)
+        done <<< "$pdffiles"
+      fi
     fi
-    $config_editor ./quakelaunch.conf
-    source ./quakelaunch.conf
+    $config_editor "$conf"
+    basegame_error=""
+    source "$conf"
   fi
   # If we just created this config, clean it up a bit by removing examples
   # and then initialize the preview_readme_and_config value to false.
   if [[ $conf_created == "true" ]]
   then
-    grep -v -- "^#\*" ./quakelaunch.conf | grep -v -- "^\s*#\s*startmap=" | grep -v -- "^\s*#\s*maplist=" | sed 'N;/^\n$/D;P;D;' > "$tempconf"
+    grep -v -- "^#\*" "$conf" | grep -v -- "^\s*#\s*startmap=" | grep -v -- "^\s*#\s*maplist=" | grep -v -- "^\s*#\s*quake_args=" | sed 'N;/^\n$/D;P;D;' > "$tempconf"
+    echo >> "$tempconf"
     cat <<- EOF >> "$tempconf"
 	# The preview_readme_and_config option is set false after initial launch so
 	# that the readme and config editor(s) won't appear on future launches.
 	EOF
     echo >> "$tempconf"
     echo "preview_readme_and_config=false" >> "$tempconf"
-    mv -f "$tempconf" ./quakelaunch.conf
+    mv -f "$tempconf" "$conf"
+  fi
+  # Abandon ship now if basegame_error is still set.
+  if [[ $basegame_error != "" ]]
+  then
+    if [[ $basegame_error == "ad" ]]
+    then
+      message "Gamedir contains a doc that mentions Arcane Dimensions. It's unclear how to launch this since ad_basegame_args is undefined in quakelaunch.conf."
+      exit 1
+    fi
+    if [[ $basegame_error == "copper" ]]
+    then
+      message "Gamedir contains a doc that mentions Copper. It's unclear how to launch this since copper_basegame_args is undefined in quakelaunch.conf."
+      exit 1
+    fi
+  fi
+  # Check to see if any required base gamedirs are missing.
+  if [[ "$basegame_args" == "-quoth" ]]
+  then
+    if [[ $(is_standalone_gamedir "quoth") == "false" ]]
+    then
+      message "depends on quoth gamedir but quoth is not installed"
+      exit 1
+    fi
+  else
+    if [[ "$basegame_args" == "-hipnotic" ]]
+    then
+      if [[ $(is_standalone_gamedir "hipnotic") == "false" ]]
+      then
+        message "depends on hipnotic gamedir but hipnotic is not installed"
+        exit 1
+      fi
+    else
+      if [[ "$basegame_args" == "-rogue" ]]
+      then
+        if [[ $(is_standalone_gamedir "rogue") == "false" ]]
+        then
+          message "depends on rogue gamedir but rogue is not installed"
+          exit 1
+        fi
+      else
+        if [[ -n "$ad_basegame_args" && "$basegame_args" == "$ad_basegame_args" ]]
+        then
+          if [[ -n "$ad_gamedir" && $(is_standalone_gamedir "$ad_gamedir") == "false" ]]
+          then
+            message "depends on $ad_gamedir gamedir but $ad_gamedir is not installed"
+            exit 1
+          fi
+        else
+          if [[ -n "$copper_basegame_args" && "$basegame_args" == "$copper_basegame_args" ]]
+          then
+            if [[ -n "$copper_gamedir" && $(is_standalone_gamedir "$copper_gamedir") == "false" ]]
+            then
+              message "depends on $copper_gamedir gamedir but $copper_gamedir is not installed"
+              exit 1
+            fi
+          fi
+        fi
+      fi
+    fi
   fi
   # Let's run some Quake!
   cd "$quakedir"
@@ -752,9 +985,14 @@ then
   fi
   if [[ "$valid_maplist" == "true" ]]
   then
-    jamhelper=$(jam_helper "$basedir/$mod" "$maplist" "$current_startmap")
+    if [[ -z "$userdata_home" ]]
+    then
+      jamhelper=$(jam_helper "$basedir"/"$mod" "$maplist" "$current_startmap")
+    else
+      jamhelper=$(jam_helper "$userdata_home"/"$mod" "$maplist" "$current_startmap")
+    fi
   fi
-  exec "$quake" -basedir "$basedir" $quake_args $basegame_args -game "$mod" $startmap_args $jamhelper
+  exec "$quake" -basedir "$basedir" $quake_args $extra_quake_args $basegame_args -game "$mod" $startmap_args $jamhelper
 fi
 
 # If we got here, we couldn't figure out what to do.
