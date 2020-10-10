@@ -736,7 +736,8 @@ then
     then
       lastsave=$(ls -1dt "$basedir"/"$mod"/*.sav 2>/dev/null | head -1)
     else
-      lastsave=$(ls -1dt "$basedir"/"$mod"/*.sav "$userdata_home"/"$mod"/*.sav 2>/dev/null | head -1)
+      # When userdata_home is set, savegames under the basedir are ignored.
+      lastsave=$(ls -1dt "$userdata_home"/"$mod"/*.sav 2>/dev/null | head -1)
     fi
     if [[ -n "$lastsave" ]]
     then

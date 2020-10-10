@@ -91,6 +91,8 @@ to create a shortcut file that has a carriage return in it.
 
 If a launched gamedir contains any savegames, the most recent one will be loaded. (Unless you had launched it by opening a specific bsp file.)
 
+If your Quake engine is using a [userdata](userdata.md) directory, only savegames in userdata subdirectories can be loaded, so only those savegames will be considered here.
+
 ## Startmaps
 
 If you launch a gamedir that contains no savegames, "quakelaunch" will try to choose a good initial map to load. The rules it goes by are:
