@@ -49,12 +49,18 @@ then
   exit 1
 fi
 
+if [[ -n "$extra_quake_args" ]]
+then
+  extra_quake_args=""
+  message "extra_quake_args in main conf ignored; should be used only in gamedir conf"
+fi
+
 # Simple launch if no args.
 if [[ -z "$1" ]]
 then
   basic_validation
   cd "$quakedir"
-  exec "$quake" -basedir "$basedir"
+  exec "$quake" -basedir "$basedir" $quake_args
 fi
 
 # OK we have more complicated stuff to do! A few more utility functions:
@@ -828,9 +834,13 @@ then
 	#* (command-line arguments to ADD TO any specified in the main config).
 	#* For example you could set extra_quake_args to a value of "-listen 16"
 	#* if this gamedir is a bots mod that must run as a listen server.
-
+	EOF
+    echo >> "$tempconf"
+    echo "# extra_quake_args=\"\"" >> "$tempconf"
+    echo >> "$tempconf"
+    cat <<- EOF >> "$tempconf"
 	#* The commented-out line below shows the current value of quake_args as
-	#* set by the main config:
+	#* set by the main config, just FYI:
 	EOF
     echo >> "$tempconf"
     echo "# quake_args=\"$quake_args\"" >> "$tempconf"
@@ -908,7 +918,7 @@ then
   # and then initialize the preview_readme_and_config value to false.
   if [[ $conf_created == "true" ]]
   then
-    grep -v -- "^#\*" "$conf" | grep -v -- "^\s*#\s*startmap=" | grep -v -- "^\s*#\s*maplist=" | grep -v -- "^\s*#\s*quake_args=" | sed 'N;/^\n$/D;P;D;' > "$tempconf"
+    grep -v -- "^#\*" "$conf" | grep -v -- "^\s*#\s*startmap=" | grep -v -- "^\s*#\s*maplist=" | grep -v -- "^\s*#\s*extra_quake_args=" | grep -v -- "^\s*#\s*quake_args=" | sed 'N;/^\n$/D;P;D;' > "$tempconf"
     echo >> "$tempconf"
     cat <<- EOF >> "$tempconf"
 	# The preview_readme_and_config option is set false after initial launch so
