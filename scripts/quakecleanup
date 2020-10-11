@@ -110,18 +110,15 @@ then
   done
 fi
 
-# Delete the corresponding subdirectory of basedir, unless installs are set to
-# happen under userdata_home.
-if [[ -z "$userdata_home" || "$install_to_userdata" != "true" ]]
+# Delete the corresponding subdirectory of basedir, unless configured not to.
+if [[ -d "$basedir"/"$mod" && "$keep_basedir_subdirectory_on_cleanup" != "true" ]]
 then
-  if [[ -d "$basedir"/"$mod" ]]
-  then
-    rm -rf "$basedir"/"$mod"
-  fi
+  rm -rf "$basedir"/"$mod"
 fi
 
-# If userdata_home is set, delete the corresponding subdirectory there.
-if [[ -n "$userdata_home" && -d "$userdata_home"/"$mod" ]]
+# If userdata_home is set, delete the corresponding subdirectory there, unless
+# configured not to.
+if [[ -n "$userdata_home" && -d "$userdata_home"/"$mod" && "$keep_userdata_subdirectory_on_cleanup" != "true" ]]
 then
   rm -rf "$userdata_home"/"$mod"
 fi

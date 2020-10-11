@@ -69,5 +69,3 @@ Generally speaking, if "userdata_home" is set, then whenever quakelaunch needs t
 And whenever quakelaunch needs to generate a file (quakelaunch.conf or jam_helper.cfg), that file will be created in the userdata subdirectory.
 
 If you set "userdata_home", you should also set a true or false value for the "install_to_userdata" option. "install_to_userdata" controls where files end up when you install a gamedir through quakelaunch. Should they go under the Quake basedir, or into a userdata directory? If your Quake basedir is not writeable by normal users then you should definitely set this option to true.
-
-The "install_to_userdata" option also affects the behavior of the quakecleanup script when "userdata_home" is set. If "userdata_home" is set and "install_to_userdata" is true then it will **not** try to remove the corresponding basedir subdirectory when doing "Quake mod cleanup". (It will always remove the userdata subdirectory.)
