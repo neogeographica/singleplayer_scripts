@@ -79,20 +79,23 @@ function is_standalone {
         if [[ -n "$progslist" ]]
         then
           echo true
-        else
-          echo false
+          return
         fi
-        return
+        # Fall through to check for loose progs file.
       else
         # Didn't work. Since expak is supposedly installed let's complain.
         message "expak_installed=true in quakelaunch.conf, but failed to use expak"
+        # Best guess, as per comment below.
+        echo true
+        return
       fi
+    else
+      # There are paks but we can't see what might be in there. For most new
+      # releases this really does mean standalone, although for some older
+      # Quoth releases (e.g. ne_tower) it might not. Just do best guess here.
+      echo true
+      return
     fi
-    # There are paks but we can't see what might be in there. For most new
-    # releases this really does mean standalone, although for some older Quoth
-    # releases (e.g. ne_tower) it might not. Just do best guess here.
-    echo true
-    return
   fi
   progsfound=$(find -L "$@" -type f -iname '*progs.dat' 2>/dev/null)
   if [[ -n "$progsfound" ]]
