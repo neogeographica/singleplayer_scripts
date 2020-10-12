@@ -65,19 +65,36 @@ fi
 
 # OK we have more complicated stuff to do! A few more utility functions:
 
-# Function to see if the given dirs contain a pak file or (qw)progs.dat.
+# Function to see if the given dirs contain a (qw)progs.dat.
 function is_standalone {
-  # XXX If expak is installed we could grope the paks to see if they contain
-  # a progs.dat. However it would generally be really odd for a release to have
-  # a pak file at all if it's intended to be dropped into some other mod, so
-  # that's probably not necessary.
-  paksfound=$(find "$@" -type f -iname '*.pak')
+  paksfound=$(find -L "$@" -type f -iname '*.pak' 2>/dev/null)
   if [[ -n "$paksfound" ]]
   then
+    if [[ $expak_installed == "true" ]]
+    then
+      paklist=$(echo "$paksfound" | sed 's/\(.*\)/"\1"/' | tr '\n' ' ' | sed 's/" "/","/g')
+      progslist=$(python -c "import expak;print(' '.join([r for r in expak.resource_names([$paklist]) if r.lower().endswith('progs.dat')]))" 2>/dev/null)
+      if [[ $? -eq 0 ]]
+      then
+        if [[ -n "$progslist" ]]
+        then
+          echo true
+        else
+          echo false
+        fi
+        return
+      else
+        # Didn't work. Since expak is supposedly installed let's complain.
+        message "expak_installed=true in quakelaunch.conf, but failed to use expak"
+      fi
+    fi
+    # There are paks but we can't see what might be in there. For most new
+    # releases this really does mean standalone, although for some older Quoth
+    # releases (e.g. ne_tower) it might not. Just do best guess here.
     echo true
     return
   fi
-  progsfound=$(find "$@" -type f -iname '*progs.dat')
+  progsfound=$(find -L "$@" -type f -iname '*progs.dat' 2>/dev/null)
   if [[ -n "$progsfound" ]]
   then
     echo true
