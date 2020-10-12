@@ -28,20 +28,23 @@ You should double-check though to make sure what the Quake program you are using
 * Start up your Quake program.
 * Start a new game of the original campaign.
 * Make a quicksave.
+* Play a little more, then try reloading from the quicksave. Hopefully this works! (If not, we'll get to that.)
 * Quit out of Quake.
-* Check in the "id1" subdirectory of your Quake basedir, and see if a quicksave is there with the right timestamp.
+* Check in the "id1" subdirectory of your Quake basedir, and see if a "quick.sav" file is there with the right timestamp.
 
-If you see the savegame you created there (in "id1" under the basedir), then your Quake engine is **not** currently using a userdata directory and you can ignore the rest of this doc.
+If you see the "quick.sav" savegame you created there (in "id1" under the basedir), then your Quake engine is **not** currently using a userdata directory and you can ignore the rest of this doc.
 
 If you don't see the savegame though, you need to go find it! For the Quake engines in the table above it's probably in an "id1" subdirectory of the userdata directory shown in the table.
 
-So for example if you're using FTE, the savegame has probably been created in the "$HOME/.local/share/quake/id1" directory. For DarkPlaces it's probably in "$HOME/.darkplaces/id1". Etc. Once you've found the savegame you created, you know for sure what userdata directory is being used by your Quake engine.
+So for example if you're using FTE, the savegame has probably been created in the "$HOME/.local/share/quake/id1" directory. For DarkPlaces it's probably in "$HOME/.darkplaces/id1". Etc. Once you've found the savegame you created, you know for sure what userdata home directory is being used by your Quake engine.
 
 You may benefit from this userdata feature if you have Quake installed in a system-wide location and shared by multiple users. However this behavior does have some downsides, since it can confuse users or programs (including the quakelaunch script) who expect the original Quake behavior.
 
+**!** Note that if creating or loading from the quicksave failed in the test above, then you should check whether your Quake installation's "id1" directory is user-modifiable. If it's not then you either need to change its permissions, or you may be in the precise situation where you do need a userdata feature in your Quake engine.
+
 ## What's the easy solution?
 
-The easiest solution is to turn off the userdata behavior if you don't need/want it. All of the Quake engines mentioned in this doc allow you to disable userdata with the "-nohome" commandline argument.
+If you don't need/want the userdata behavior, the best and easiest solution is to turn it off. All of the Quake engines mentioned in this doc allow you to disable userdata with the "-nohome" commandline argument.
 
 If you want to make sure that the "-nohome" argument is always provided when you launch Quake, then make the "quake_args" option in quakelaunch.conf specify it. E.g. you could just have a line in your quakelaunch.conf that looks like this:
 ```
@@ -62,10 +65,10 @@ Or for DarkPlaces you would set
 userdata_home="$HOME/.darkplaces"
 ```
 
-Generally speaking, if "userdata_home" is set, then whenever quakelaunch needs to look for files it will look both in the relevant directory under basedir (if it exists) and in the relevant userdata subdirectory. For example this behavior will kick in when the script goes looking for savegames and maps; it also covers cases where the script looks for readme files/documents and quakelaunch.conf files.
+Generally speaking, if "userdata_home" is set, then whenever quakelaunch needs to look for files it will look both in the relevant directory under basedir (if it exists) and in the relevant userdata subdirectory. The only exception to this is the treatment of savegames, which will only be looked for in the userdata subdirectory.
 
 (This does raise the question, what if a gamedir-specific quakelaunch.conf file happens to exist in the subdirectory under basedir as well as in the userdata subdirectory? In that case quakelaunch will honor both of them, with values from the one in the userdata subdirectory taking precedence. This is potentially confusing but seems to be the best resolution.)
 
-And whenever quakelaunch needs to generate a file (quakelaunch.conf or jam_helper.cfg), that file will be created in the userdata subdirectory.
+Whenever quakelaunch needs to generate a file (quakelaunch.conf or jam_helper.cfg), that file will be created in the userdata subdirectory.
 
-If you set "userdata_home", you should also set a true or false value for the "install_to_userdata" option. "install_to_userdata" controls where files end up when you install a gamedir through quakelaunch. Should they go under the Quake basedir, or into a userdata directory? If your Quake basedir is not writeable by normal users then you should definitely set this option to true.
+If you set "userdata_home", you should also set a true or false value for the "install_to_userdata" option. This option controls where files end up when you install a gamedir through quakelaunch. Should they go under the Quake basedir, or into a userdata subdirectory? If your Quake basedir is not writeable by normal users then you should definitely set this option to true.

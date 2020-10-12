@@ -20,7 +20,7 @@ You may then want/need to install some of the various tools mentioned at the bot
 
 **2. Install optional Python module "expak"**
 
-The main script can also optionally use my Python module [expak](https://github.com/neogeographica/expak) to look inside pak files and make better decisions about what map to launch. To use this module, you will need Python 2 or Python 3 installed; the script will use whatever executable has the name "python". The expak module will need to be installed for that version of Python with:
+The main script can also optionally use my Python module [expak](https://github.com/neogeographica/expak) to look inside pak files and make better decisions about things like what map to launch and whether a gamedir is "standalone" (has its own progs.dat). To use this module, you will need Python 2 or Python 3 installed; the script will use whatever executable has the name "python". The expak module will need to be installed for that version of Python with:
 ```bash
 sudo pip install expak
 ```
@@ -108,21 +108,19 @@ If the script can't figure out which map to load, just use the console as usual 
 
 ## Quoth and missionpacks
 
-If the gamedir contains a document that mentions a dependency on quoth, hipnotic, or rogue, then "quakelaunch" will honor that when launching it. It will stop with an error if the necessary base gamedir is not present.
+If the gamedir contains a document that mentions a dependency on quoth, hipnotic, or rogue, then "quakelaunch" will honor that dependency when launching it... unless the gamedir appears to be "standalone" i.e. comes with its own progs.dat.
+
+An attempt to launch a gamedir with such a dependency will stop with an error if the necessary base gamedir is not present.
 
 ## Arcane Dimensions and Copper
 
-Some custom singleplayer releases make use of Arcane Dimensions or Copper, either as a standalone release or as additional files meant to be merged into the base mod. "quakelaunch" takes this to be the case if a document in the gamedir mentions one of those mods.
+"quakelaunch" will similarly look in docs for mentions of Arcane Dimensions or Copper (unless the gamedir is standalone). If it finds such a mention, that will be interpreted as a dependency on that mod.
 
-A "standalone" release is detected if it has a progs.dat or any pak files. If this is the case then it will be installed and launched like any other mod, in its own gamedir.
+Unlike the situation with Quoth and missionpack dependencies however, not all Quake engines can handle launching non-standalone AD/Copper-dependent content that is installed in its own separate gamedir. If you have a Quake engine that can do it, you can set the relevant options in your "quakelaunch.conf" file. I do know that [FTE](http://fte.triptohell.info/), [Quakespasm-Spiked](http://triptohell.info/moodles/qss/), [vkQuake](https://github.com/Novum/vkQuake) (after version 1.04.1), and [DarkPlaces](https://icculus.org/twilight/darkplaces/) can do it, and I've included examples in the conf file that work with those engines.
 
-For a non-standalone release it's a little more complicated. As described in the top-level readme I like to keep each release in its own gamedir. So these AD/Copper releases should each go into their own gamedir and then be launched specifying the Arcane Dimensions or Copper gamedir as a dependency... same as we do with content built for Quoth or the missionpacks. Some Quake engines don't have that feature, but if you have a Quake engine that can do it, you can set the relevant options in your "quakelaunch.conf" file. I do know that [FTE](http://fte.triptohell.info/), [Quakespasm-Spiked](http://triptohell.info/moodles/qss/), [vkQuake](https://github.com/Novum/vkQuake) (after version 1.04.1), and [DarkPlaces](https://icculus.org/twilight/darkplaces/) can do it, and I've included examples in the conf file that work with those engines.
+(BTW if you are making your own build of Quakespasm, [multigame-support.md](multigame-support.md) describes how you can add this capability to Quakespasm. vkQuake users may also want to check that document if currently using vkQuake 1.04.1 or earlier.)
 
-(BTW if you are making your own build of Quakespasm, [multigame-support.md](multigame-support.md) describes how you can add this capability to that Quake engine. vkQuake users may also want to check that document if running vkQuake 1.04.1 or earlier.)
-
-Therefore if you install a non-standalone Arcane Dimensions or Copper release, it will go into its own gamedir just like any other map/mod release. Then if you try to launch that gamedir, what happens next will depend on your configuration:
-* If you're set up in quakelaunch.conf to handle AD/Copper as a base gamedir, the gamedir for this release will be launched accordingly (using AD/Copper as a base). 
-* Otherwise you'll get an error message and the gamedir will not be launched. You can override this behavior if you want, by editing the per-gamedir config (see below).
+If you try to launch a non-standalone gamedir that depends on AD or Copper, and you are **not** set up in quakelaunch.conf to handle AD/Copper as a base gamedir, you'll get an error message and the gamedir will not be launched. You can override this behavior if you want, by editing the per-gamedir config (see below).
 
 ## Per-gamedir configs
 
