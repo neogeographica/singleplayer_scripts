@@ -797,6 +797,7 @@ then
 	# you have fixed some things) then you can remove the line below that is
 	# setting basegame_error.
 	EOF
+      echo >> "$tempconf"
       echo "basegame_error=\"$basegame_error\"" >> "$tempconf"
     fi
     echo >> "$tempconf"
