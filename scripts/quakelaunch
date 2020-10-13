@@ -592,13 +592,20 @@ then
       calc_startmap=false
     fi
     # If there's an existing config (not "superconf"), make sure that
-    # preview_readme_and_config will be false on future launches.
+    # preview_readme_and_config and fix_capitalization will be false on future
+    # launches.
     if [[ $has_conf == "true" ]]
     then
       if [[ "$preview_readme_and_config" != "false" ]]
       then
         grep -v -- "^\s*preview_readme_and_config=" "$conf" > "$tempconf"
         echo "preview_readme_and_config=false" >> "$tempconf"
+        mv -f "$tempconf" "$conf"
+      fi
+      if [[ "$fix_capitalization" != "false" ]]
+      then
+        grep -v -- "^\s*fix_capitalization=" "$conf" > "$tempconf"
+        echo "fix_capitalization=false" >> "$tempconf"
         mv -f "$tempconf" "$conf"
       fi
     fi
@@ -937,17 +944,20 @@ then
     source "$conf"
   fi
   # If we just created this config, clean it up a bit by removing examples
-  # and then initialize the preview_readme_and_config value to false.
+  # and then initialize the preview_readme_and_config and fix_capitalization
+  # values to false.
   if [[ $conf_created == "true" ]]
   then
     grep -v -- "^#\*" "$conf" | grep -v -- "^\s*#\s*startmap=" | grep -v -- "^\s*#\s*maplist=" | grep -v -- "^\s*#\s*extra_quake_args=" | grep -v -- "^\s*#\s*quake_args=" | sed 'N;/^\n$/D;P;D;' > "$tempconf"
     echo >> "$tempconf"
     cat <<- EOF >> "$tempconf"
-	# The preview_readme_and_config option is set false after initial launch so
-	# that the readme and config editor(s) won't appear on future launches.
+	# The options below are set false after initial launch so they won't
+	# happen again on future launches (unless you manually set them back to
+	# true).
 	EOF
     echo >> "$tempconf"
     echo "preview_readme_and_config=false" >> "$tempconf"
+    echo "fix_capitalization=false" >> "$tempconf"
     mv -f "$tempconf" "$conf"
   fi
   # Abandon ship now if basegame_error is still set.
