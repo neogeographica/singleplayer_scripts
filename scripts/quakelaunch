@@ -712,7 +712,7 @@ then
       fi
       # Remove things that look like bmodels; remove "maps/" prefix and .bsp
       # extension; sort alphabetically; remove any leading/trailing spaces.
-      maplist=$(echo "$maplist" | sed 's/ *maps\/b_[^ ]*\.bsp */ /gI' | sed 's/maps\/\([^ ]*\)\.bsp/\1/gI' | tr ' ' '\n' | sort -f | uniq | tr '\n' ' ')
+      maplist=$(echo "$maplist" | sed 's/ *maps\/b_[^ ]*\.bsp */ /gI' | sed 's/ *maps\/[^\/ ]*\/[^ ]*\.bsp */ /gI' | sed 's/maps\/\([^ ]*\)\.bsp/\1/gI' | tr ' ' '\n' | sort -f | uniq | tr '\n' ' ')
       maplist=${maplist##+([[:space:]])}
       maplist=${maplist%%+([[:space:]])}
     fi
