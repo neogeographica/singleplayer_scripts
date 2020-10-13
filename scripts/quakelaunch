@@ -682,7 +682,7 @@ then
       if [[ $expak_installed == "true" ]]
       then
         paklist=$(echo "$paks" | sed 's/\(.*\)/"\1"/' | tr '\n' ' ' | sed 's/" "/","/g')
-        maplist=$(python -c "import expak;print(' '.join([r for r in expak.resource_names([$paklist]) if r.lower().startswith('maps/')]))" 2>/dev/null)
+        maplist=$(python -c "import expak;print(' '.join([r for r in expak.resource_names([$paklist]) if r.lower().startswith('maps/') and r.lower().endswith('.bsp')]))" 2>/dev/null)
         if [[ $? -ne 0 ]]
         then
           # Didn't work. Since expak is supposedly installed let's complain.
