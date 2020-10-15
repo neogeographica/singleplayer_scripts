@@ -95,19 +95,23 @@ fi
 # userdata_home/mod.
 if [[ -n "$shortcuts_dir" && -d "$shortcuts_dir" ]]
 then
-  for file in $(ls -1 "$shortcuts_dir"/*.quake 2> /dev/null)
-  do
-    target=$(gamedir_for_shortcut "$file")
-    if [[ "$target" == "$basedir"/"$mod" ]]
-    then
-      rm -f "$file"
-    else
-      if [[ -n "$userdata_home" && "$target" == "$userdata_home"/"$mod" ]]
+  shortcuts=$(ls -1d "$shortcuts_dir"/*.quake 2> /dev/null)
+  if [[ -n "$shortcuts" ]]
+  then
+    while IFS= read -r file
+      do
+      target=$(gamedir_for_shortcut "$file")
+      if [[ "$target" == "$basedir"/"$mod" ]]
       then
         rm -f "$file"
+      else
+        if [[ -n "$userdata_home" && "$target" == "$userdata_home"/"$mod" ]]
+        then
+          rm -f "$file"
+        fi
       fi
-    fi
-  done
+    done <<< "$shortcuts"
+  fi
 fi
 
 # Delete the corresponding subdirectory of basedir, unless configured not to.
