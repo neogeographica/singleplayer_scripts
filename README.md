@@ -70,7 +70,7 @@ I like to put any Quake map release into its own gamedir, even vanilla bsp-only 
 
 > To evangelize briefly: Keeping each release in its own gamedir lets me see at a glance what I've currently installed, makes it obvious which savegames and bits of configuration are relevant to which releases, makes "uninstallation" braindead-simple, and also makes it possible to do some automated installation and launching with a pretty lightweight script.
 
-One consequence is that non-standalone Arcane Dimensions and Copper releases installed this way cannot be launched *unless* you are using a Quake engine like [FTE](http://fte.triptohell.info/), [Quakespasm-Spiked](http://triptohell.info/moodles/qss/), [vkQuake](https://github.com/Novum/vkQuake) (after version 1.04.1), or [DarkPlaces](https://icculus.org/twilight/darkplaces/) that supports specifying multiple "game" directories to use when loading a mod or maps. See the "Arcane Dimensions and Copper" section of [scripts/README.md](scripts/README.md) for more details.
+One consequence is that non-standalone Arcane Dimensions and Copper releases installed this way cannot be launched *unless* you are using a Quake engine like [FTE](http://fte.triptohell.info/), [Quakespasm-Spiked](http://triptohell.info/moodles/qss/), [vkQuake](https://github.com/Novum/vkQuake) (version 1.05.0 and later), or [DarkPlaces](https://icculus.org/twilight/darkplaces/) that supports specifying multiple "game" directories to use when loading a mod or maps. See the "Arcane Dimensions and Copper" section of [scripts/README.md](scripts/README.md) for more details.
 
 ## Some assembly required
 
