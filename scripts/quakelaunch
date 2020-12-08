@@ -395,7 +395,14 @@ then
       # Get rid of Windows stuff, config.cfg, and autoexec.cfg
       # Using match patterns with the config files to force case-insensitive
       # match for the whole name (from the shopt -s nocaseglob).
-      rm -f *.exe *.dll [Cc]onfig.cfg [Aa]utoexec.cfg
+      rm -f *.exe *.dll *.bat *.cmd [Cc]onfig.cfg [Aa]utoexec.cfg
+      # If pak or progs is here, assume everything is already organized and
+      # we're done.
+      paksprogs=$(ls -1d *.pak *progs.dat 2>/dev/null)
+      if [[ -n "$paksprogs" ]]
+      then
+        break
+      fi
       # If there is only one directory here, and it's not a known Quake
       # content directory, then it's packaging cruft. Move its contents up
       # and keep looping.
@@ -421,7 +428,7 @@ then
     # If there are loose bsp/ent/lit/loc/map files in top level, put them in
     # their place. It is kind of weird for this to happen if there is a maps
     # or locs directory already, but if so I guess we'll just move them there.
-    mapsfiles=$(ls -1d *.bsp *.ent *.lit *.map 2>/dev/null)
+    mapsfiles=$(ls -1d *.bsp *.ent *.lit *.map *.jmf *.rmf *.vmf 2>/dev/null)
     if [[ -n "$mapsfiles" ]]
     then
       mapsdir=$(ls -1d [Mm]aps 2>/dev/null)
