@@ -638,31 +638,35 @@ then
       fi
     fi
   fi
-  # If basegame_args was not explicitly set in a gamedir-specific conf, see if
-  # we can figure out any required basegame from grepping docs. (Only do this
-  # if the mod is not "standalone".)
+  # For a non-standalone mod where basegame_args was not explicitly set in a
+  # gamedir-specific conf, see if we can figure out any required basegame from
+  # grepping docs. Arcane Dimensions is somewhat different; we assume AD if
+  # and only if a bsp has the "ad_" prefix, as that works for every existing
+  # map currently. (Note that we don't have to worry about maps inside pak files
+  # since this logic only applies to non-standalone releases.)
   if [[ $calc_basegame_args == "true" && $(is_standalone_gamedir "$mod") == "false" ]]
   then
-    if [[ $(docscheck "quoth" "$mod") == "true" ]]
+    ad_bsps=$(ls -1d "$basedir"/"$mod"/maps/ad_*.bsp 2>/dev/null)
+    if [[ -n "$ad_bsps" ]]
     then
-      basegame_args=-quoth
-    else
-      if [[ $(docscheck "-hipnotic\|-game hipnotic" "$mod") == "true" ]]
+      if [[ -n "$ad_basegame_args" ]]
       then
-        basegame_args=-hipnotic
+        basegame_args=$ad_basegame_args
       else
-        if [[ $(docscheck "-rogue\|-game rogue" "$mod") == "true" ]]
+        basegame_error="ad"
+      fi
+    else
+      if [[ $(docscheck "quoth" "$mod") == "true" ]]
+      then
+        basegame_args=-quoth
+      else
+        if [[ $(docscheck "-hipnotic\|-game hipnotic" "$mod") == "true" ]]
         then
-          basegame_args=-rogue
+          basegame_args=-hipnotic
         else
-          if [[ $(docscheck "arcane dimension" "$mod") == "true" ]]
+          if [[ $(docscheck "-rogue\|-game rogue" "$mod") == "true" ]]
           then
-            if [[ -n "$ad_basegame_args" ]]
-            then
-              basegame_args=$ad_basegame_args
-            else
-              basegame_error="ad"
-            fi
+            basegame_args=-rogue
           else
             if [[ $(docscheck "copper" "$mod") == "true" ]]
             then

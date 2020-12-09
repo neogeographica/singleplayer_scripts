@@ -114,7 +114,9 @@ An attempt to launch a gamedir with such a dependency will stop with an error if
 
 ## Arcane Dimensions and Copper
 
-"quakelaunch" will similarly look in docs for mentions of Arcane Dimensions or Copper (unless the gamedir is standalone). If it finds such a mention, that will be interpreted as a dependency on that mod.
+"quakelaunch" will similarly look in docs for mentions of Copper (unless the gamedir is standalone). If it finds such a mention, that will be interpreted as a dependency on that mod.
+
+For Arcane Dimensions, instead of examining the docs it will look to see if there is a bsp filename that starts with the "ad_" prefix... that turns out to be a 100% reliable indicator (so far) of a dependency on AD.
 
 Unlike the situation with Quoth and missionpack dependencies however, not all Quake engines can handle launching non-standalone AD/Copper-dependent content that is installed in its own separate gamedir. If you have a Quake engine that can do it, you can set the relevant options in your "quakelaunch.conf" file. I do know that [FTE](http://fte.triptohell.info/), [Quakespasm-Spiked](http://triptohell.info/moodles/qss/), [vkQuake](https://github.com/Novum/vkQuake) (version 1.05.0 and later), and [DarkPlaces](https://icculus.org/twilight/darkplaces/) can do it, and I've included examples in the conf file that work with those engines.
 
