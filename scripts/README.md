@@ -134,7 +134,7 @@ You can edit this file as you wish. Many of the options in the main "quakelaunch
 
 This file will also contain a "basegame_args" option that specifies how any base gamedir dependecies (described above) affect the launch arguments for Quake. You can edit this value if it looks like the script has made the wrong conclusions. For example, if you have a gamedir that requires Quoth but doesn't mention that fact in any of its docs, then the script will initially set the "basegame_args" value to emptystring (nothing) since it couldn't detect the dependency. In that case you would want to manually change the "basegame_args" value to "-quoth".
 
-You can also set a "extra_quake_args" option in this file if you want to specify additional command-line arguments to use with this gamedir. For example, if a gamedir is a "bots" mod that requires being launched with listen-server settings, then in its gamedir-specific config you can insert a line that sets the "extra_quake_args" option to a value of "-listen 16".
+You can also set an "extra_quake_args" option in this file if you want to specify additional command-line arguments to use with this gamedir. For example, if a gamedir is a "bots" mod that requires being launched with listen-server settings, then in its gamedir-specific config you can insert a line that sets the "extra_quake_args" option to a value of "-listen 16".
 
 There are other options you might wish to set in this file. If you use the "readme and config preview" feature described below, you'll get to see more commentary about those options.
 
