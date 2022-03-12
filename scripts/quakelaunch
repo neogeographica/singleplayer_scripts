@@ -348,8 +348,11 @@ then
     fi
     tmpdir=$(mktemp -d)
     aunpack -qX "$tmpdir" "$arg"
-    if [[ $? -ne 0 ]]
+    if [[ $? -eq 0 ]]
     then
+      chmod -R +w "$tmpdir"
+    else
+      chmod -R +w "$tmpdir"
       rm -rf "$tmpdir"
       if which aunpack >/dev/null
       then
