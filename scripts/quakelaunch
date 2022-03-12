@@ -953,6 +953,17 @@ then
         done <<< "$pdffiles"
       fi
     fi
+    if [[ -n "$md_viewer" ]]
+    then
+      mdfiles=$(fileslist "md" "$mod")
+      if [[ -n "$mdfiles" ]]
+      then
+        while IFS= read -r file
+        do
+          (($md_viewer "$file")&)
+        done <<< "$mdfiles"
+      fi
+    fi
     $config_editor "$conf"
     basegame_error=""
     source "$conf"

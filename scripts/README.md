@@ -148,7 +148,7 @@ So for example you could look at the readme to note any base gamedir dependencie
 
 If "preview_readme_and_config" is true, you must also provide a value for "config_editor". This value describes how to launch an editor program for the gamedir-specific "quakelaunch.conf" file. The comments in the main "quakelaunch.conf" file describe the requirements for how you set this up. In the provided example I've chosen to use the "gedit" editor, which is a nice GUI text editor available on many Linux variants. If you don't have gedit, you could install it ("sudo apt install gedit")... or use some other editor as long as you can meet the requirements.
 
-You can also provide values for txt_viewer, html_viewer, doc_viewer, and pdf_viewer to define how those document types can be viewed. In my example I use gedit again for .txt files, and xdg-open for all other file types to just use whatever the system default is.
+You can also provide values for txt_viewer, html_viewer, doc_viewer, pdf_viewer, and md_viewer to define how those document types can be viewed. In my example I use gedit again for .txt files, and xdg-open for all other file types to just use whatever the system default is.
 
 ## Mapjam helper
 
