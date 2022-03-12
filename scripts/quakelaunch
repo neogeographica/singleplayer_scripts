@@ -361,7 +361,7 @@ then
     fi
     # Move the extracted contents to a new gamedir, named after the archive.
     destdir=$(basename "$arg")
-    destdir=${destdir%%.*}
+    destdir=${destdir%.*}
     if [[ "$destdir" == "quoth2pt2full" ]]
     then
         # Special treatment for this Quoth release; it still needs to use the
