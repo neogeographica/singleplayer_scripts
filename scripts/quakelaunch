@@ -172,6 +172,8 @@ function recap_dirs {
 # Quake assumes lowercase extensions for: pak/dem/sav/dat files, stuff in the
 # maps dir, stuff in the locs dir, and stuff in the music dir. In the case of
 # pak files and dat files we'll lowercase the whole name.
+# XXX Testing: Also symlink common filename case variations to actual file.
+# XXX Probably want to make that controlled by a separate config option.
 function recap_files {
   pakfiles=$(ls -1d *.pak *.dat 2>/dev/null)
   if [[ -n "$pakfiles" ]]
@@ -192,6 +194,23 @@ function recap_files {
       mv "$file" "$filebase".$fileext 2>/dev/null
     done <<< "$extfiles"
   fi
+  knowndirspat=${knowndirs// /\\|}
+  curdir=$(readlink -f .)
+  targetfiles=$(find "$curdir" -type f | exec grep "^$curdir/\($knowndirspat\)/")
+  for file in $targetfiles
+  do
+    # Make all-lower, all-caps, and initial-caps variants.
+    filedir=$(dirname -- "$file")
+    filebase=$(basename -- "$file")
+    all_lower=$(echo "$filebase" | tr '[:upper:]' '[:lower:]')
+    all_upper=$(echo "$filebase" | tr '[:lower:]' '[:upper:]')
+    init_caps="$(echo "${all_lower:0:1}" | tr '[:lower:]' '[:upper:]')${all_lower:1}"
+    # Symlink all these to the original. Note that we expect some failures here
+    # so swallow stderr.
+    ln -s $file "$filedir/$all_lower" 2>/dev/null
+    ln -s $file "$filedir/$all_upper" 2>/dev/null
+    ln -s $file "$filedir/$init_caps" 2>/dev/null
+  done
 }
 
 # XXX Note that this script doesn't (and can't easily) fix cases where
@@ -716,14 +735,14 @@ then
       fi
     fi
     # If we haven't given up on maplist-building, now look for loose bsp files
-    # and add those to our list.
+    # and add those to our list. Make sure we skip any symlinks.
     if [[ "$valid_maplist" == "true" ]]
     then
       if [[ -z "$userdata_home" ]]
       then
-        loosemaps=$(ls -1d "$basedir"/"$mod"/maps/*.bsp 2>/dev/null | sed "s/.*maps\//maps\//" | tr '\n' ' ')
+        loosemaps=$(find "$basedir"/"$mod"/maps -maxdepth 1 -type f -name '*.bsp' 2>/dev/null | sed "s/.*maps\//maps\//" | tr '\n' ' ')
       else
-        loosemaps=$(ls -1d "$basedir"/"$mod"/maps/*.bsp "$userdata_home"/"$mod"/maps/*.bsp 2>/dev/null | sed "s/.*maps\//maps\//" | tr '\n' ' ')
+        loosemaps=$(find "$basedir"/"$mod"/maps "$userdata_home"/"$mod"/maps -maxdepth 1 -type f -name '*.bsp' 2>/dev/null | sed "s/.*maps\//maps\//" | tr '\n' ' ')
       fi
       if [[ -n "$loosemaps" ]]
       then
