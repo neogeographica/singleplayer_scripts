@@ -213,10 +213,11 @@ function recap_files {
   done
 }
 
-# XXX Note that this script doesn't (and can't easily) fix cases where
-# filepaths baked into the bsp or quake.rc or etc. have the wrong
-# capitalization compared to the actual files. In that case you kind of just
-# have to watch the console for errors and fix manually by renaming or making
+# XXX Note that this script doesn't always fix cases where filepaths baked
+# into the bsp or quake.rc or etc. have the wrong capitalization compared to
+# the actual files. We just blindly try to accomodate the most common errors.
+# If some other filename case error happens, you will just need to catch that
+# by watching the console for errors and fix it manually by renaming or making
 # symlinks.
 
 # Function to find the map that a savegame will load into.
