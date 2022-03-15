@@ -44,11 +44,11 @@ function basic_validation {
 # Function to check consistency in other conf properties, after any gamedir-
 # specific conf has been sourced.
 function more_validation {
-  if [[ $symlink_variant_names == "true" ]]
+  if [[ $create_filename_symlinks == "true" ]]
   then
     if [[ "$fix_capitalization" != "true" ]]
     then
-      message "symlink_variant_names can only be enabled when fix_capitalization is also enabled"
+      message "create_filename_symlinks can only be enabled when fix_capitalization is also enabled"
       exit 1
     fi
   fi
@@ -641,7 +641,7 @@ then
       calc_startmap=false
     fi
     # If there's an existing config (not "superconf"), make sure that
-    # preview_readme_and_config, fix_capitalization, and symlink_variant_names
+    # preview_readme_and_config, fix_capitalization, and create_filename_symlinks
     # will be false on future launches.
     if [[ $has_conf == "true" ]]
     then
@@ -657,10 +657,10 @@ then
         echo "fix_capitalization=false" >> "$tempconf"
         mv -f "$tempconf" "$conf"
       fi
-      if [[ "$symlink_variant_names" != "false" ]]
+      if [[ "$create_filename_symlinks" != "false" ]]
       then
-        grep -v -- "^\s*symlink_variant_names=" "$conf" > "$tempconf"
-        echo "symlink_variant_names=false" >> "$tempconf"
+        grep -v -- "^\s*create_filename_symlinks=" "$conf" > "$tempconf"
+        echo "create_filename_symlinks=false" >> "$tempconf"
         mv -f "$tempconf" "$conf"
       fi
     fi
@@ -686,7 +686,7 @@ then
       fi
     fi
   fi
-  if [[ $symlink_variant_names == "true" ]]
+  if [[ $create_filename_symlinks == "true" ]]
   then
     if [[ -d "$basedir"/"$mod" ]]
     then
