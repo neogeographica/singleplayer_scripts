@@ -208,25 +208,39 @@ function recap_files {
   fi
 }
 
+# Recursive utility function used by create_symlinks, to create symlinks for
+# all components in a path past the first subdirectory under the gamedir.
+function create_path_component_symlinks {
+  path="$1"
+  curdir="$2"
+  head=$(dirname -- "$path")
+  if [[ "$head" == "." ]]
+  then
+    # The path is the topmost subdirectory, so we're done.
+    return
+  fi
+  tail=$(basename -- "$path")
+  all_lower=$(echo "$tail" | tr '[:upper:]' '[:lower:]')
+  all_upper=$(echo "$tail" | tr '[:lower:]' '[:upper:]')
+  init_caps="$(echo "${all_lower:0:1}" | tr '[:lower:]' '[:upper:]')${all_lower:1}"
+  # Symlink all these to the original. Note that we expect some failures here
+  # so swallow stderr.
+  ln -s "$curdir/$path" "$curdir/$head/$all_lower" 2>/dev/null
+  ln -s "$curdir/$path" "$curdir/$head/$all_upper" 2>/dev/null
+  ln -s "$curdir/$path" "$curdir/$head/$init_caps" 2>/dev/null
+  # Recurse to climb up the path.
+  create_path_component_symlinks "$head" "$curdir"
+}
+
 # Function to symlink common filename case variations to the actual file, for
 # every loose file in the knowndirs subdirectories.
 function create_symlinks {
   knowndirspat=${knowndirs// /\\|}
   curdir=$(readlink -f .)
-  targetfiles=$(find "$curdir" -type f | exec grep "^$curdir/\($knowndirspat\)/")
+  targetfiles=$(find . -type f | exec grep "^\./\($knowndirspat\)/")
   for file in $targetfiles
   do
-    # Make all-lower, all-caps, and initial-caps variants.
-    filedir=$(dirname -- "$file")
-    filebase=$(basename -- "$file")
-    all_lower=$(echo "$filebase" | tr '[:upper:]' '[:lower:]')
-    all_upper=$(echo "$filebase" | tr '[:lower:]' '[:upper:]')
-    init_caps="$(echo "${all_lower:0:1}" | tr '[:lower:]' '[:upper:]')${all_lower:1}"
-    # Symlink all these to the original. Note that we expect some failures here
-    # so swallow stderr.
-    ln -s $file "$filedir/$all_lower" 2>/dev/null
-    ln -s $file "$filedir/$all_upper" 2>/dev/null
-    ln -s $file "$filedir/$init_caps" 2>/dev/null
+    create_path_component_symlinks "${file:2}" "$curdir"
   done
 }
 
@@ -1034,8 +1048,8 @@ then
     more_validation
   fi
   # If we just created this config, clean it up a bit by removing examples
-  # and then initialize the preview_readme_and_config and fix_capitalization
-  # values to false.
+  # and then initialize the preview_readme_and_config, fix_capitalization,
+  # and create_filename_symlinks values to false.
   if [[ $conf_created == "true" ]]
   then
     grep -v -- "^#\*" "$conf" | grep -v -- "^\s*#\s*startmap=" | grep -v -- "^\s*#\s*maplist=" | grep -v -- "^\s*#\s*extra_quake_args=" | grep -v -- "^\s*#\s*quake_args=" | sed 'N;/^\n$/D;P;D;' > "$tempconf"
