@@ -31,12 +31,26 @@ function usage {
   message "usage: quakelaunch [archive|gamedir|foo.bsp|foo.quake]"
 }
 
-# Function to make sure the config has been populated with what we need.
+# Function to make sure the config has been populated with what we need to
+# launch Quake.
 function basic_validation {
   if [[ -z "$basedir" || -z "$quake" ]]
   then
     message "necessary option(s) in quakelaunch.conf have not been specified"
     exit 1
+  fi
+}
+
+# Function to check consistency in other conf properties, after any gamedir-
+# specific conf has been sourced.
+function more_validation {
+  if [[ $symlink_variant_names == "true" ]]
+  then
+    if [[ "$fix_capitalization" != "true" ]]
+    then
+      message "symlink_variant_names can only be enabled when fix_capitalization is also enabled"
+      exit 1
+    fi
   fi
 }
 
@@ -550,6 +564,7 @@ then
     source "$gamedir"/quakelaunch.conf
   fi
   basic_validation
+  more_validation
   # If this directory is not under basedir or (if relevant) userdata_home, we
   # can't deal with it.
   if [[ "$gamedirparent" != "$basedir" ]]
@@ -596,6 +611,7 @@ then
     source "$conf"
   fi
   basic_validation
+  more_validation
   # Everything has been sourced. For certain overrides, note that we should
   # NOT try to calculate values for these vars below.
   if [[ $has_conf == "true" || $has_superconf == "true" ]]
@@ -1014,6 +1030,8 @@ then
     $config_editor "$conf"
     basegame_error=""
     source "$conf"
+    basic_validation
+    more_validation
   fi
   # If we just created this config, clean it up a bit by removing examples
   # and then initialize the preview_readme_and_config and fix_capitalization
