@@ -1048,6 +1048,7 @@ then
     echo >> "$tempconf"
     echo "preview_readme_and_config=false" >> "$tempconf"
     echo "fix_capitalization=false" >> "$tempconf"
+    echo "create_filename_symlinks=false" >> "$tempconf"
     mv -f "$tempconf" "$conf"
   fi
   # Abandon ship now if basegame_error is still set.
