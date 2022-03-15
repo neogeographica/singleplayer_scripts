@@ -1,6 +1,6 @@
 ## Who's this document for?
 
-This document is about an issue that should probably **not** matter to you if you are using an officially-released or built-from-default-configuration binary of [Quakespasm](http://quakespasm.sourceforge.net/) or a Quakespasm variant like [Quakespasm-Spiked](http://triptohell.info/moodles/qss/) or [vkQuake](https://github.com/Novum/vkQuake). It might matter though if you are using a custom build.
+This document is about an issue that should probably **not** matter to you if you are using an officially-released or built-from-default-configuration binary of [Quakespasm](http://quakespasm.sourceforge.net/) or a Quakespasm variant like [Quakespasm-Spiked](http://triptohell.info/moodles/qss/), [vkQuake](https://github.com/Novum/vkQuake), or [Ironwail](https://github.com/andrei-drexler/ironwail). It might matter though if you are using a custom build.
 
 It **does** likely matter to you if you are using an official release of [FTE](http://fte.triptohell.info/) or [DarkPlaces](https://icculus.org/twilight/darkplaces/). Possibly some other Quake engines as well.
 
@@ -21,6 +21,7 @@ The table below lists the directory that each Quake engine will use for userdata
 | Quakespasm        | $HOME/.quakespasm        | no      |
 | Quakespasm-Spiked | $HOME/.quakespasm        | no      |
 | vkQuake           | $HOME/.vkquake           | no      |
+| Ironwail          | $HOME/.quakespasm        | no      |
 | FTE               | $HOME/.local/share/quake | **YES** |
 | DarkPlaces        | $HOME/.darkplaces        | **YES** |
 

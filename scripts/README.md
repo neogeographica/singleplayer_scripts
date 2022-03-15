@@ -118,9 +118,9 @@ An attempt to launch a gamedir with such a dependency will stop with an error if
 
 For Arcane Dimensions, instead of examining the docs it will look to see if there is a bsp filename that starts with the "ad_" prefix... that turns out to be a 100% reliable indicator (so far) of a dependency on AD.
 
-Unlike the situation with Quoth and missionpack dependencies however, not all Quake engines can handle launching non-standalone AD/Copper-dependent content that is installed in its own separate gamedir. If you have a Quake engine that can do it, you can set the relevant options in your "quakelaunch.conf" file. I do know that [FTE](http://fte.triptohell.info/), [Quakespasm-Spiked](http://triptohell.info/moodles/qss/), [vkQuake](https://github.com/Novum/vkQuake) (version 1.05.0 and later), and [DarkPlaces](https://icculus.org/twilight/darkplaces/) can do it, and I've included examples in the conf file that work with those engines.
+Unlike the situation with Quoth and missionpack dependencies however, not all Quake engines can handle launching non-standalone AD/Copper-dependent content that is installed in its own separate gamedir. If you have a Quake engine that can do it, you can set the relevant options in your "quakelaunch.conf" file. I do know that recent releases of [FTE](http://fte.triptohell.info/), [Quakespasm-Spiked](http://triptohell.info/moodles/qss/), [vkQuake](https://github.com/Novum/vkQuake), [Ironwail](https://github.com/andrei-drexler/ironwail), and [DarkPlaces](https://icculus.org/twilight/darkplaces/) can do it, and I've included examples in the conf file that work with those engines.
 
-(BTW if you are making your own build of Quakespasm, [multigame-support.md](multigame-support.md) describes how you can add this capability to Quakespasm. vkQuake users may also want to check that document if currently using vkQuake before version 1.05.0.)
+(BTW if you are making your own build of Quakespasm, [multigame-support.md](multigame-support.md) describes how you can add this capability to Quakespasm.)
 
 If you try to launch a non-standalone gamedir that depends on AD or Copper, and you are **not** set up in quakelaunch.conf to handle AD/Copper as a base gamedir, you'll get an error message and the gamedir will not be launched. You can override this behavior if you want, by editing the per-gamedir config (see below).
 
