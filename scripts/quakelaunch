@@ -172,8 +172,6 @@ function recap_dirs {
 # Quake assumes lowercase extensions for: pak/dem/sav/dat files, stuff in the
 # maps dir, stuff in the locs dir, and stuff in the music dir. In the case of
 # pak files and dat files we'll lowercase the whole name.
-# XXX Testing: Also symlink common filename case variations to actual file.
-# XXX Probably want to make that controlled by a separate config option.
 function recap_files {
   pakfiles=$(ls -1d *.pak *.dat 2>/dev/null)
   if [[ -n "$pakfiles" ]]
@@ -194,6 +192,11 @@ function recap_files {
       mv "$file" "$filebase".$fileext 2>/dev/null
     done <<< "$extfiles"
   fi
+}
+
+# Function to symlink common filename case variations to the actual file, for
+# every loose file in the knowndirs subdirectories.
+function create_symlinks {
   knowndirspat=${knowndirs// /\\|}
   curdir=$(readlink -f .)
   targetfiles=$(find "$curdir" -type f | exec grep "^$curdir/\($knowndirspat\)/")
@@ -622,8 +625,8 @@ then
       calc_startmap=false
     fi
     # If there's an existing config (not "superconf"), make sure that
-    # preview_readme_and_config and fix_capitalization will be false on future
-    # launches.
+    # preview_readme_and_config, fix_capitalization, and symlink_variant_names
+    # will be false on future launches.
     if [[ $has_conf == "true" ]]
     then
       if [[ "$preview_readme_and_config" != "false" ]]
@@ -636,6 +639,12 @@ then
       then
         grep -v -- "^\s*fix_capitalization=" "$conf" > "$tempconf"
         echo "fix_capitalization=false" >> "$tempconf"
+        mv -f "$tempconf" "$conf"
+      fi
+      if [[ "$symlink_variant_names" != "false" ]]
+      then
+        grep -v -- "^\s*symlink_variant_names=" "$conf" > "$tempconf"
+        echo "symlink_variant_names=false" >> "$tempconf"
         mv -f "$tempconf" "$conf"
       fi
     fi
@@ -657,6 +666,24 @@ then
         pushd "$userdata_home"/"$mod" > /dev/null
         recap_dirs
         recap_files
+        popd > /dev/null
+      fi
+    fi
+  fi
+  if [[ $symlink_variant_names == "true" ]]
+  then
+    if [[ -d "$basedir"/"$mod" ]]
+    then
+      pushd "$basedir"/"$mod" > /dev/null
+      create_symlinks
+      popd > /dev/null
+    fi
+    if [[ -n "$userdata_home" ]]
+    then
+      if [[ -d "$userdata_home"/"$mod" ]]
+      then
+        pushd "$userdata_home"/"$mod" > /dev/null
+        create_symlinks
         popd > /dev/null
       fi
     fi

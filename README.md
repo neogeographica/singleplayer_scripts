@@ -92,9 +92,11 @@ Basically... be familiar with how the script works (described in [scripts/README
 
 One of the bullet points above was "Common capitalization errors that break Linux play will be fixed." The gist of this is that the script will fix problems related to common assumptions that the Quake engine makes about how things like directory names and file extensions are capitalized. So for example if there's a map named "FOO.BSP" the script will rename it to "FOO.bsp" so that it can be loaded properly in Linux.
 
-What the script can't do -- or at least doesn't do, currently -- is find and fix problems related to how references to files are capitalized within the new content that you downloaded. So if a map in some new episode you downloaded has an exit portal that leads to "Map2.bsp" while the actual next map is in a loose bsp file named "map2.bsp", that won't work and the script won't fix it.
+Another available option (disabled by default) will create symlinks to make files available through other common filename variants -- in this example "FOO.bsp" would also be linked from "foo.bsp" and "Foo.bsp" -- just in case one of the files in the release is referring to something using incorrect capitalization.
 
-You can find the latter sorts of issues through paying attention to errors printed in the console when a map starts up or when something like that exit portal doesn't work. You can then figure out how to fix the problems yourself by renaming files/directories or creating symbolic links, if it's worth fixing.
+What the script DOESN'T do is dig into the release files to really find what all the bad references are and specifically try to fix them. So for example if a map in some new episode you downloaded has an exit portal that leads to "mAP2" while the actual next map is in a loose bsp file named "map2.bsp", that won't work and even the auto-symlinks option described above won't fix it since it is not a common capitalization error.
+
+Hopefully those sorts of truly weird capitalization errors will continue to be rare. You can detect them through paying attention to errors printed in the console when a map starts up or when something like that exit portal doesn't work. You can then figure out how to fix the problems yourself by manually renaming files/directories or creating symlinks, if it's worth fixing.
 
 If you want to always 100% avoid such problems you'll need to use a Quake engine that is case-insensitive even on Linux. The only one I'm aware of at the moment is [FTE](http://fte.triptohell.info/).
 
