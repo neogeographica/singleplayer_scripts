@@ -41,19 +41,6 @@ function basic_validation {
   fi
 }
 
-# Function to check consistency in other conf properties, after any gamedir-
-# specific conf has been sourced.
-function more_validation {
-  if [[ $create_filename_symlinks == "true" ]]
-  then
-    if [[ "$fix_capitalization" != "true" ]]
-    then
-      message "create_filename_symlinks can only be enabled when fix_capitalization is also enabled"
-      exit 1
-    fi
-  fi
-}
-
 # Take care of the simplest arguments cases:
 
 # Forbid more than one arg.
@@ -578,7 +565,6 @@ then
     source "$gamedir"/quakelaunch.conf
   fi
   basic_validation
-  more_validation
   # If this directory is not under basedir or (if relevant) userdata_home, we
   # can't deal with it.
   if [[ "$gamedirparent" != "$basedir" ]]
@@ -625,7 +611,6 @@ then
     source "$conf"
   fi
   basic_validation
-  more_validation
   # Everything has been sourced. For certain overrides, note that we should
   # NOT try to calculate values for these vars below.
   if [[ $has_conf == "true" || $has_superconf == "true" ]]
@@ -679,8 +664,9 @@ then
       fi
     fi
   fi
-  # Take care of any obvious capitalization gotchas.
-  if [[ $fix_capitalization == "true" ]]
+  # Take care of any obvious capitalization gotchas. Note that setting
+  # create_filename_symlinks true implies forcing this true.
+  if [[ $fix_capitalization == "true" || $create_filename_symlinks == "true" ]]
   then
     if [[ -d "$basedir"/"$mod" ]]
     then
@@ -1045,7 +1031,6 @@ then
     basegame_error=""
     source "$conf"
     basic_validation
-    more_validation
   fi
   # If we just created this config, clean it up a bit by removing examples
   # and then initialize the preview_readme_and_config, fix_capitalization,
