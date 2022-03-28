@@ -130,7 +130,7 @@ function docscheck {
   fi
   for dir in "${grepdirs[@]}"
   do
-    if grep -qi -- "$pattern" "$dir"/*.txt "$dir"/*.htm* "$dir"/*readme* 2> /dev/null
+    if grep -qi -- "$pattern" "$dir"/*.txt "$dir"/*.htm* "$dir"/*.md "$dir"/*readme* 2> /dev/null
     then
       echo true
       return
