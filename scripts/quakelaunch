@@ -742,6 +742,16 @@ then
               else
                 basegame_error="copper"
               fi
+            else
+              if [[ $(docscheck "alkaline" "$mod") == "true" ]]
+              then
+                if [[ -n "$alkaline_basegame_args" ]]
+                then
+                  basegame_args=$alkaline_basegame_args
+                else
+                  basegame_error="alkaline"
+                fi
+              fi
             fi
           fi
         fi
@@ -894,6 +904,15 @@ then
 	# this since copper_basegame_args is undefined in quakelaunch.conf.
 	# You may need to manually merge the contents of this gamedir into your
 	# Copper gamedir, and then launch Copper.
+	EOF
+      fi
+      if [[ $basegame_error == "alkaline" ]]
+      then
+        cat <<- EOF >> "$tempconf"
+	# Gamedir contains a doc that mentions Alkaline. It's unclear how to launch
+	# this since alkaline_basegame_args is undefined in quakelaunch.conf.
+	# You may need to manually merge the contents of this gamedir into your
+	# Alkaline gamedir, and then launch Alkaline.
 	EOF
       fi
       cat <<- EOF >> "$tempconf"
@@ -1063,6 +1082,11 @@ then
       message "Gamedir contains a doc that mentions Copper. It's unclear how to launch this since copper_basegame_args is undefined in quakelaunch.conf."
       exit 1
     fi
+    if [[ $basegame_error == "alkaline" ]]
+    then
+      message "Gamedir contains a doc that mentions Alkaline. It's unclear how to launch this since alkaline_basegame_args is undefined in quakelaunch.conf."
+      exit 1
+    fi
   fi
   # Check to see if any required base gamedirs are missing.
   if [[ "$basegame_args" == "-quoth" ]]
@@ -1103,6 +1127,15 @@ then
             then
               message "depends on $copper_gamedir gamedir but $copper_gamedir is not installed"
               exit 1
+            fi
+          else
+            if [[ -n "$alkaline_basegame_args" && "$basegame_args" == "$alkaline_basegame_args" ]]
+            then
+              if [[ -n "$alkaline_gamedir" && $(is_standalone_gamedir "$alkaline_gamedir") == "false" ]]
+              then
+                message "depends on $alkaline_gamedir gamedir but $alkaline_gamedir is not installed"
+                exit 1
+              fi
             fi
           fi
         fi
