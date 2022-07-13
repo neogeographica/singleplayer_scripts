@@ -429,6 +429,8 @@ then
     fi
     # Take our best shot at making this playable.
     cd "$destdir"
+    inferred_basegame=
+    basegamespat="id1\|hipnotic\|rogue\|quoth\|copper\|ad\|alkaline"
     # Try to get rid of any extra directories generated in archive-creation,
     # as well as other files we don't want.
     while true
@@ -444,23 +446,59 @@ then
       then
         break
       fi
-      # If there is only one directory here, and it's not a known Quake
-      # content directory, then it's packaging cruft. Move its contents up
-      # and keep looping.
-      dirshere=$(find -maxdepth 1 -type d | grep -v '^\.$')
-      if [[ "$dirshere" != "" && $(echo "$dirshere" | wc -l) -eq 1 ]]
-      then
-        echo "$knowndirs" | grep -qwi "$dirshere"
-        if [[ $? -ne 0 ]]
+      # If any directory looks like a "basegame", and it contains known Quake
+      # content directories, move its contents up and infer the basegame. And
+      # keep looping. (If "id1", don't infer basegame though.)
+      did_move=false
+      dirs_here=$(find -maxdepth 1 -type d | grep -v '^\.$' | grep -oP '^\./\K.+')
+      basegames_here=$(echo "$dirs_here" | grep "^\($basegamespat\)$")
+      for dir in $basegames_here
+      do
+        subdirs=$(find $dir -maxdepth 1 -type d | grep -v "^$dir$" | grep -oP "^$dir/\K.+")
+        echo "$knowndirs" | grep -qwi "$subdirs"
+        if [[ $? -eq 0 ]]
         then
-          mv "$dirshere"/* .
+          if [[ $dir != "id1" ]]
+          then
+            if [[ $inferred_basegame != "" && $inferred_basegame != $dir ]]
+            then
+              rm -rf "$destdir"
+              message "archive seems to indicate both $inferred_basegame and $dir as basegame"
+              exit 1
+            fi
+            inferred_basegame=$dir
+          fi
+          mv $dir/* .
           if [[ $? -ne 0 ]]
           then
             rm -rf "$destdir"
             message "failed in organizing the extracted archive contents"
             exit 1
           fi
-          rm -rf "$dirshere"
+          rm -rf $dir
+          did_move=true
+        fi
+      done
+      if [[ $did_move == "true" ]]
+      then
+        continue
+      fi
+      # If there is only one directory here, and it's not a known Quake
+      # content directory, then it's packaging cruft. Move its contents up
+      # and keep looping.
+      if [[ "$dirs_here" != "" && $(echo "$dirs_here" | wc -l) -eq 1 ]]
+      then
+        echo "$knowndirs" | grep -qwi "$dirs_here"
+        if [[ $? -ne 0 ]]
+        then
+          mv "$dirs_here"/* .
+          if [[ $? -ne 0 ]]
+          then
+            rm -rf "$destdir"
+            message "failed in organizing the extracted archive contents"
+            exit 1
+          fi
+          rm -rf "$dirs_here"
           continue
         fi
       fi
@@ -701,6 +739,60 @@ then
         pushd "$userdata_home"/"$mod" > /dev/null
         create_symlinks
         popd > /dev/null
+      fi
+    fi
+  fi
+  # If we didn't get basegame_args from a gamedir-specific conf, see if we can
+  # infer it from the way the archive was organized.
+  if [[ $calc_basegame_args == "true" && $inferred_basegame != "" ]]
+  then
+    if [[ $(is_standalone_gamedir "$mod") == "true" ]]
+    then
+      message "archive appears to depend on $inferred_basegame but also contains paks/progs"
+      exit 1
+    fi
+    calc_basegame_args=false
+    if [[ $inferred_basegame == "quoth" ]]
+    then
+      basegame_args=-quoth
+    else
+      if [[ $inferred_basegame == "hipnotic" ]]
+      then
+        basegame_args=-hipnotic
+      else
+        if [[ $inferred_basegame == "rogue" ]]
+        then
+          basegame_args=-rogue
+        else
+          if [[ $inferred_basegame == "ad" ]]
+            if [[ -n "$ad_basegame_args" ]]
+            then
+              basegame_args=$ad_basegame_args
+            else
+              basegame_error="ad"
+            fi
+          then
+            if [[ $inferred_basegame == "copper" ]]
+            then
+              if [[ -n "$copper_basegame_args" ]]
+              then
+                basegame_args=$copper_basegame_args
+              else
+                basegame_error="copper"
+              fi
+            else
+              if [[ $inferred_basegame == "alkaline" ]]
+              then
+                if [[ -n "$alkaline_basegame_args" ]]
+                then
+                  basegame_args=$alkaline_basegame_args
+                else
+                  basegame_error="alkaline"
+                fi
+              fi
+            fi
+          fi
+        fi
       fi
     fi
   fi
