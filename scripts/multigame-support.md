@@ -4,7 +4,7 @@ This may be interesting to you if you are compiling your own build of Quakespasm
 
 ## What's the problem?
 
-As mentioned in the [readme](README.md), it's handy to have "multiple gamedir" support in Quake. That allows you to easily work with foundational mods like Arcane Dimensions and Copper which have additional map releases based on them. You can keep those "other releases" in their own separate gamedirs and just instruct Quake to use the foundational mod as a base gamedir to build on top of.
+As mentioned in the [readme](README.md), it's handy to have "multiple gamedir" support in Quake. That allows you to easily work with foundational mods like Arcane Dimensions, Copper, and Alkaline which can have additional map releases based on them. You can keep those "other releases" in their own separate gamedirs and just instruct Quake to use the foundational mod as a base gamedir to build on top of.
 
 Any modern Quake engine that is meant for singleplayer will support this nice behavior for Quoth. You can just give it the "-quoth" argument to indicate that a gamedir depends on Quoth. For example if you have a gamedir named "ne_tower" that depends on your "quoth" gamedir as a foundation, you can launch Quake with the arguments "-quoth -game ne_tower".
 
@@ -16,7 +16,7 @@ Happily a couple of other engines have also taken this feature onboard in recent
 
 If you're using a Quake engine that supports this feature, you can specify the "ad_basegame_args" and "copper_basegame_args" values in quakelaunch.conf to handle automatic installation of releases that depend on Arcane Dimensions or Copper.
 
-If you're using a Quake engine that does **not** support this feature, you have to manually do file-merges of AD or Copper releases into the main AD or Copper directory.
+If you're using a Quake engine that does **not** support this feature, you have to manually do file-merges of AD/Copper/Alkaline-based releases into the main AD/Copper/Alkaline directory.
 
 ## What's the solution?
 
