@@ -319,6 +319,7 @@ function jam_helper {
 
 arg="$1"
 maplist=""
+inferred_basegame=""
 basegame_args=""
 basegame_error=""
 startmap=""
@@ -429,7 +430,6 @@ then
     fi
     # Take our best shot at making this playable.
     cd "$destdir"
-    inferred_basegame=
     basegamespat="id1\|hipnotic\|rogue\|quoth\|copper\|ad\|alkaline"
     # Try to get rid of any extra directories generated in archive-creation,
     # as well as other files we don't want.
