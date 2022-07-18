@@ -19,6 +19,7 @@
  */
 
 const CONTEXT_MENU_ID = "OPEN_WITH_QUAKE";
+const ICON_CLEAR_ALARM = "iconClear";
 
 // The purpose of this extension is just to download a file as the
 // application/x-qz MIME type, giving it the ".qz" extension. For this to
@@ -51,66 +52,78 @@ chrome.runtime.onInstalled.addListener(
   }
 );
 
+// Define a listener to clear the icon some time after an error.
+chrome.alarms.onAlarm.addListener(
+  function(alarm) {
+    if (alarm.name !== ICON_CLEAR_ALARM) {
+      // Bail out now if not our alarm.
+      return;
+    }
+    chrome.action.getBadgeBackgroundColor(
+      {},
+      function(result) {
+        // Only clear the color if it is still red. This is just a backstop
+        // against a possible weird race between clearing the alarm,
+        // starting a new op, and processing a handler triggered just before
+        // the alarm was cleared.
+        if (result[0] === 255) {
+          chrome.action.setBadgeText({text: ""});
+          chrome.action.setBadgeBackgroundColor({color: [0, 0, 0, 0]});
+        }
+      }
+    );
+  }
+);
+
 // Status-update function. Controls whether menu item is enabled and what
 // progress percentage to show.
 function setStatus(inProgress, message) {
   chrome.contextMenus.update(CONTEXT_MENU_ID, {enabled: !inProgress});
-  chrome.browserAction.setBadgeText({text: message});
+  chrome.action.setBadgeText({text: message});
   if (inProgress) {
-    chrome.browserAction.setBadgeBackgroundColor({color: [0, 0, 0, 0]});
+    chrome.action.setBadgeBackgroundColor({color: [0, 0, 0, 0]});
   } else {
     if (message !== "") {
       // Error.
-      chrome.browserAction.setBadgeBackgroundColor({color: [255, 0, 0, 255]});
-      // Need to clear this color & message after a bit. Let's say 5 seconds.
-      setTimeout(
-        function() {
-          chrome.browserAction.getBadgeBackgroundColor(
-            {},
-            function(result) {
-              // Only clear the color if it is still red. Conceivably some
-              // other operation could now be in progress.
-              if (result[0] === 255) {
-                chrome.browserAction.setBadgeText({text: ""});
-                chrome.browserAction.setBadgeBackgroundColor({color: [0, 0, 0, 0]});
-              }
-            }
-          );
-        },
-        5000
-      );
+      chrome.action.setBadgeBackgroundColor({color: [255, 0, 0, 255]});
+      // Need to clear this color & message after a bit. Minimum alarm time
+      // is 1 minute so I guess we'll do that!
+      chrome.alarms.create(ICON_CLEAR_ALARM, { delayInMinutes: 1 });
     }
   }
 }
 
-// Callback function triggered when a download we initiated has started.
-// Note that this is the internal "download" from the blob we already fetched
-// (see the context menu handler below).
-function handleDownloadStarted(downloadId) {
-  if (downloadId === undefined) {
-    console.log("failed to trigger download handling");
-    // Failed for some reason. Bail out, but first clear status.
-    setStatus(false, "err");
-    return;
-  }
-  // Define the callback function we'll run on any download update.
-  const callback = function handleDownloadChanged(downloadDelta) {
-    if (downloadDelta.id !== downloadId) {
-      // We only want to do things if this is the download we initiated.
-      return;
+// Need to track blob content in a global so that our fetch event listener can
+// access it. We can currently have only one blob "active" at a time, but
+// let's go ahead and make this an array indexed by URL for future-proofness
+// and for paranoia against edge cases.
+var blobForUrl = []
+
+// Set the fetch event listener for our "virtual" downloaded-content URLs.
+self.addEventListener(
+  'fetch',
+  function(event) {
+    if (event.request.url in blobForUrl) {
+      try {
+        event.respondWith(
+          new Response(
+            blobForUrl[event.request.url],
+            {
+              status: 200,
+              headers: {'Content-Disposition': 'attachment'}
+            }
+          )
+        );
+        delete blobForUrl[event.request.url];
+        setStatus(false, "");
+      } catch(err) {
+        console.log("error handling fetch for content: " + err);
+        delete blobForUrl[event.request.url];
+        setStatus(false, "err");
+      }
     }
-    if (downloadDelta.endTime === undefined) {
-      // Not done yet.
-      return;
-    }
-    // All done. Remove this callback.
-    chrome.downloads.onChanged.removeListener(handleDownloadChanged);
-    // Clear status.
-    setStatus(false, "");
   }
-  // Register the callback we defined.
-  chrome.downloads.onChanged.addListener(callback);
-}
+);
 
 // Define what happens when our context menu item is used.
 chrome.contextMenus.onClicked.addListener(
@@ -119,6 +132,8 @@ chrome.contextMenus.onClicked.addListener(
       // Bail out now if not our item.
       return;
     }
+    // Make sure there's not an existing icon-clear alarm pending.
+    chrome.alarms.clear(ICON_CLEAR_ALARM);
     // Disable the menu item.
     setStatus(true, "");
     // Note that we can't give the original url to chrome.downloads.download
@@ -197,6 +212,10 @@ chrome.contextMenus.onClicked.addListener(
       // asking us to do that.
       const htmlBlob = new Blob(chunks, {type : "text/html"});
       const page = await new Response(htmlBlob).text();
+      // XXX next Manifest V3 problem: no DOMParser
+      // might be able to do a junky approximation by regex looking for
+      // that meta element with an http-equiv="refresh" attribute ... yes
+      // yes I know you can't generaly really use regex to parse html.
       let parser = new DOMParser();
       const doc = parser.parseFromString(page, "text/html");
       for (element of doc.getElementsByTagName("META")) {
@@ -223,18 +242,20 @@ chrome.contextMenus.onClicked.addListener(
         return;
       }
     }
+    // Compose a virtual URL representing this content.
+    virtualUrl = chrome.runtime.getURL(file + ".qz");
     // Create a "blob" from the fetched chunks, with the MIME type we want.
-    const blob = new Blob(chunks, {type : 'application/x-qz'});
-    // Now use chrome.downloads.download to handle the blob. Add the ".qz"
-    // extension to the filename.
-    chrome.downloads.download(
-      {
-        url: URL.createObjectURL(blob),
-        filename: file + '.qz',
-        conflictAction: 'uniquify'
-      },
-      handleDownloadStarted
-    );
+    blobForUrl[virtualUrl] = new Blob(chunks, {type : 'application/x-qz'});
+    // Open a new tab to trigger the fetch.
+    let newTab = await chrome.tabs.create({
+      active: false,
+      url: virtualUrl
+    });
+    if (!newTab) {
+      console.log("failed to open new tab with the virtual URL");
+      delete blobForUrl[virtualUrl];
+      setStatus(false, "err");
+    }
   }
 );
 
