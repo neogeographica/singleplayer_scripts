@@ -39,7 +39,8 @@ const ICON_CLEAR_ALARM = "iconClear";
 // user interaction.
 
 
-// When this extension is loaded in, set up our context menu item.
+// When this extension is loaded in, set up our context menu item and
+// "offscreen" page.
 chrome.runtime.onInstalled.addListener(
   function() {
     chrome.contextMenus.create(
@@ -47,6 +48,13 @@ chrome.runtime.onInstalled.addListener(
         id: CONTEXT_MENU_ID,
         title: "Open with Quake",
         contexts: ["link"]
+      }
+    );
+    await chrome.offscreen.createDocument(
+      {
+        url: 'offscreen.html',
+        reasons: ['DOM_SCRAPING'],
+        justification: 'parsing received page to find any meta-refresh redirect'
       }
     );
   }
@@ -212,30 +220,16 @@ chrome.contextMenus.onClicked.addListener(
       // asking us to do that.
       const htmlBlob = new Blob(chunks, {type : "text/html"});
       const page = await new Response(htmlBlob).text();
-      // XXX next Manifest V3 problem: no DOMParser
-      // might be able to do a junky approximation by regex looking for
-      // that meta element with an http-equiv="refresh" attribute ... yes
-      // yes I know you can't generaly really use regex to parse html.
-      let parser = new DOMParser();
-      const doc = parser.parseFromString(page, "text/html");
-      for (element of doc.getElementsByTagName("META")) {
-        const attrs = element.attributes;
-        const httpEquiv = attrs.getNamedItem("http-equiv")
-        if ((httpEquiv !== null) && (httpEquiv.value.toLowerCase() === "refresh")) {
-          const contentValue = attrs.getNamedItem("content");
-          if (contentValue !== null) {
-            const urlMarker = contentValue.value.indexOf('=');
-            if (urlMarker !== -1) {
-              // OK I guess it's a redirect! We'll follow it.
-              url = contentValue.value.substring(urlMarker + 1)
-              console.log("redirecting to " + url);
-              didRedirect = true;
-              break;
-            }
-          }
-        }
-      }
-      if (!didRedirect) {
+      // Need to parse the page HTML to look for a meta element that indicates
+      // a redirect. In Manifest V3 we can't do that here in the background
+      // script (no DOMParser allowed) so we'll ask our "offscreen" page to
+      // do it.
+      let redirectUrl = await chrome.runtime.sendMessage(page);
+      if (redirectUrl) {
+        console.log("redirecting to " + url);
+        url = redirectUrl;
+        didRedirect = true;
+      } else {
         // It's not a redirect (or at least not one we understand) so...
         console.log("link goes to an HTML page");
         setStatus(false, "err");

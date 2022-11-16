@@ -27,7 +27,8 @@
     "permissions": [
       "alarms",
       "contextMenus",
-      "downloads"
+      "downloads",
+      "offscreen"
     ],
     "host_permissions": [
       "<all_urls>"
