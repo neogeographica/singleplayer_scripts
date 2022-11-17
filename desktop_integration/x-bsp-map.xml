@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
   <mime-type type="application/x-bsp-map">
-    <glob pattern="*.bsp"/>
+    <magic priority="60">
+      <match offset="0" type="little32" value="29"/>
+      <match offset="0" type="string" value="BSP2"/>
+      <match offset="0" type="string" value="2PSB"/>
+      <match offset="0" type="string" value=" 46Q"/>
+    </magic>
     <comment>BSP map</comment>
   </mime-type>
 </mime-info>
