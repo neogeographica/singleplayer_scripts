@@ -1,8 +1,8 @@
 [Desktop Entry]
 Name=Quake
 GenericName=q1
-Exec=/path/to/quakelaunch %f
-Icon=/path/to/quake-icon-512.png
+Exec=quakelaunch %f
+#Icon=/path/to/quake-icon-512.png
 Type=Application
 MimeType=application/x-quake;application/x-bsp-map;inode/directory;application/zip
 Terminal=false

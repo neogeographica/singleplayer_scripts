@@ -8,7 +8,7 @@ Once these files have been used to set up desktop integration, the features desc
 
 If you have already installed [the scripts](../scripts/README.md) that we're going to hook into the desktop, great! If not go do that first.
 
-There are five steps in the desktop integration process. Those steps are numbered and called out below, with some other context and discussion around them.
+There are four steps in the desktop integration process. Those steps are numbered and called out below, with some other context and discussion around them.
 
 ## Prerequisites
 
@@ -48,22 +48,11 @@ If you already have an existing application definition for launching Quake, you 
 
 ### Configuration
 
-**3. Set the Exec paths in both desktop files**
+**3. Set the Icon path in the "quake.desktop" file (optional)**
 
-Before you can install these ".desktop" files, you'll need to customize them. In both of them the value for the Exec path needs to be edited to point to the location where you have placed the "quakelaunch" or "quakecleanup" script accordingly. A "%f" should be placed after the path to indicate that the script can accept a filepath argument.
+You'll probably want an icon graphic for the Quake application. An example icon "quake-icon-512.png" is included in the "icons" directory here. Place that icon, or any other icon graphic you want to use for this, in some permanent location where it won't get deleted.
 
-For example, if you have placed the "quakelaunch" script at "/home/jimbob/bin/quakelaunch", then in your "quake.desktop" file the Exec line must look like this:
-```
-Exec=/home/jimbob/bin/quakelaunch %f
-```
-
-Similarly if you intend to use the gamedir/shortcut cleanup feature, you must edit the Exec value in "quakecleanup.desktop" so that it uses the path where you have placed the "quakecleanup" script.
-
-**4. Set the Icon path in the "quake.desktop" file**
-
-You'll also want an icon graphic for the Quake application. An example icon "quake-icon-512.png" is included in the "icons" directory here. Place that icon, or any other icon graphic you want to use for this, in some permanent location where it won't get deleted.
-
-Now edit the Icon value in "quake.desktop" to be that icon's filepath.
+Now in "quake.desktop", uncomment the line that sets its Icon attribute and edit the value to be that icon's filepath.
 
 Power users may want to edit other things about the desktop files. So FYI the most important aspect of the file is that its Exec path must point at the script as described above. And of course the MimeType list is significant. The name of the desktop file itself ("quake.desktop" or "quakecleanup.desktop") is also somewhat important; it's referenced when setting the default app for filetypes as described below, and it's also referenced inside the scripts when sending error notifications.
 

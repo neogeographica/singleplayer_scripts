@@ -1,6 +1,6 @@
 # What?
 
-These are the scripts (and associated config file and sounds) used to do the heavy lifting for the features described in the [top-level readme](../README.md).
+These are the scripts (and associated optional sounds) used to do the heavy lifting for the features described in the [top-level readme](../README.md).
 
 Once these are installed and working you can go over to the desktop_integration directory and follow the instructions in [the readme there](../desktop_integration/README.md) to hook up the desired right-click and double-click behaviors.
 
@@ -12,13 +12,15 @@ Six steps are needed to get these scripts working. Those steps are numbered and 
 
 **1. Install utility "aunpack"**
 
-If you want to use the auto-install feature, you will need to have installed the utility "aunpack", which is part of [atool](https://www.nongnu.org/atool/). In my case I installed that utility and its dependencies with:
+If you want to use the auto-install feature, you will need to have installed the utility "aunpack", which is part of [atool](https://www.nongnu.org/atool/). Technically this is an optional step but it unlocks a huge part of the convenience of using these scripts, so I would always recommend doing this.
+
+In my case I installed that utility and its dependencies with:
 ```bash
 sudo apt-get install atool
 ```
 You may then want/need to install some of the various tools mentioned at the bottom of the atool webpage. For example, I already had tar, zip, gzip, and p7zip... but I needed to install rar as well in order to handle .rar archives.
 
-**2. Install optional Python module "expak"**
+**2. Install Python module "expak" (optional)**
 
 The main script can also optionally use my Python module [expak](https://github.com/neogeographica/expak) to look inside pak files and make better decisions about things like what map to launch and whether a gamedir is "standalone" (has its own progs.dat). To use this module, you will need Python 2 or Python 3 installed; the script will use whatever executable has the name "python". The expak module will need to be installed for that version of Python with:
 ```bash
@@ -27,27 +29,29 @@ sudo pip install expak
 
 If you can't or don't want to install these things globally, there are various ways to tackle that, but I think that's outside the scope of this doc.
 
+## Installation
+
+**3. Put "quakelaunch" somewhere in your PATH**
+
+The "quakelaunch" script from this directory must be copied to some directory that is in your PATH for executables. Make sure that the "quakelaunch" script in that location is marked as executable.
+
+**4. Put "quakecleanup" somewhere in your PATH (optional)**
+
+If you will be using ".quake" shortcuts (see below), it is nice to have an automated way to delete both the gamedir and its shortcut together. The "quakecleanup" script can be used for that. If you think you will want to use this script, then (as with "quakelaunch") you need to put it in your PATH and make sure it is marked executable.
+
 ## Configuration
 
-**3. Put the error sounds somewhere safe**
+**5. Put the error sounds somewhere safe (optional)**
 
 The "sounds" directory contains a selection of error beeps. If you want to use these sounds, make sure they are placed in a location where they will not get deleted. (Leaving them here among the files you downloaded for this repo is fine, if you're going to keep them intact.) Or find some other sounds you want to use.
 
-**4. Edit "quakelaunch.conf"**
+**6. Edit "quakelaunch.conf"**
 
-Now open "quakelaunch.conf" in a text editor, read through it, and modify it as necessary to reflect your own Quake setup. This includes customizing the paths that locate things such as Quake and the above error sounds, and other options to customize the behavior of the scripts. You *will* need to modify this file before the scripts will work. This file is commented thoroughly enough that it should be pretty self-explanatory, but the "Usage notes" section below covers some interesting bits.
+If this is your first time using the "quakelaunch" script on this system, at this point you should run it once. Just invoke "quakelaunch" from a shell prompt. "quakelaunch" will exit with a message about needing to edit your "quakelaunch.conf". Normally, "quakelaunch.conf" will be in the location "~/.config/quakelaunch/quakelaunch.conf". In any case, its location will be printed out as part of that message.
 
-## Installation
+Open that "quakelaunch.conf" file in a text editor, read through it, and modify it as necessary to reflect your own Quake setup. This includes customizing the paths that locate things such as Quake and the above error sounds, and other options to customize the behavior of the scripts. You *will* need to initially modify at least some of the settings in this file before the scripts will work. This file is commented thoroughly enough that it should be pretty self-explanatory, but the "Usage notes" section below covers some interesting bits.
 
-**5. Put "quakelaunch" and "quakelaunch.conf" somewhere safe**
-
-The "quakelaunch" script must be placed somewhere that it will not get deleted. Make sure that it is marked as executable.
-
-Your edited "quakelaunch.conf" file needs to be placed in the same location as the "quakelaunch" script.
-
-**6. Put "quakecleanup" in that same place**
-
-If you will be using ".quake" shortcuts (see below), it is nice to have an automated way to delete both the gamedir and its shortcut together. The "quakecleanup" script can be used for that. If you think you will want to use this script, you must put it in the same location as "quakelaunch" and "quakelaunch.conf", and make sure that it is marked executable.
+If you ever want to find out what the default value is for some setting, you can reference the "quakelaunch-defaults.conf" file that lives in the same directory as "quakelaunch.conf". (Don't modify that defaults file.)
 
 # Usage notes
 
