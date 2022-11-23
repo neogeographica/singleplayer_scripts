@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Quake mod cleanup
-Exec=/path/to/quakecleanup %f
+Exec=quakecleanup %f
 Type=Application
 MimeType=application/x-quake;inode/directory
 Terminal=false

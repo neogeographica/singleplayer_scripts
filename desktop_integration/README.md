@@ -8,7 +8,7 @@ Once these files have been used to set up desktop integration, the features desc
 
 If you have already installed [the scripts](../scripts/README.md) that we're going to hook into the desktop, great! If not go do that first.
 
-There are six steps in the desktop integration process. Those steps are numbered and called out below, with some other context and discussion around them.
+There are four steps in the desktop integration process. Those steps are numbered and called out below, with some other context and discussion around them.
 
 ## Prerequisites
 
@@ -18,29 +18,11 @@ Make sure that you are in a shell with this "desktop_integration" directory as t
 
 ## Filetypes
 
-The ".xml" files here will be used to define types for files with the ".quake" and ".bsp" extensions. This will allow us to define the default and optional ways of opening such files.
+**2. Define the filetypes**
 
-### Figure out what you want
+The ".xml" files here will be used to define types for files with the ".quake" extension and for files with bsp (compiled Quake map) content. This will then allow us to define the default and optional ways of opening such files.
 
-If you don't care about either using ".quake" shortcuts or launching from ".bsp" files, then you can skip ahead to the Applications part below. Otherwise...
-
-**2. See if ".bsp" already has a filetype**
-
-It should be fine to make a definition for the ".quake" extension, since no other app should be using that.
-
-Before you do anything for the ".bsp" extension though, you might want to check whether it is already being used for something. Right-click on an existing bsp file and choose Properties. In vanilla Ubuntu you want to see what is in parentheses next to the Type value; in elementary OS the interesting part is shown as the "Media type". If this says "application/octet-stream" it means that Linux doesn't have any particular interpretation for a ".bsp" extension; it just sees the file as a generic bucket of bits. In that case it will be safe to define our own interpretation.
-
-When I first tried this though, I saw that bsp files were treated as "application/x.stl-binary" on my system. This means they were seen as binary-format [STL](https://en.wikipedia.org/wiki/STL_(file_format)) files. In my case I was happy to override that definition because a) I don't do anything with STL, and b) I don't think that ".bsp" is an extension really used for STL files anyway.
-
-In your case, you may or may not want to set up a Quake-specific interpretation of ".bsp" files. If you don't, that's fine, and it won't affect much of the functionality of these scripts.
-
-The instructions in this doc will assume that you *are* setting up a special filetype for the ".bsp" extension, but if you have decided not to, then just skip the steps that deal with the "x-bsp-map" filetype.
-
-### Installation
-
-**3. Define the filetypes**
-
-The commands below show how you would define the filetypes for the ".quake" and ".bsp" extensions, from a shell prompt that is currently working in this "desktop_integration" directory. This includes setting an icon for ".quake" files. I'll show the commands first and then discuss how you might want to tweak them.
+The commands below show how you would define the filetypes, from a shell prompt that is currently working in this "desktop_integration" directory. This includes setting an icon for ".quake" files. I'll show the commands first and then discuss how you might want to tweak them.
 ```bash
 xdg-mime install --novendor --mode user x-quake.xml
 xdg-icon-resource install --context mimetypes --novendor --mode user --size 128 icons/quake-icon-128.png application-x-quake
@@ -50,7 +32,7 @@ update-mime-database ~/.local/share/mime
 There's a few reasons you might want to do things slightly differently, e.g.:
 * You might not want to install the x-quake filetype if you're not going to use ".quake" shortcuts, in which case you would skip the first two commands.
 * You might want to have the x-quake filetype but give it a different icon, in which case you would change the icon filepath and maybe the icon size in the second command.
-* You might not want to install the x-bsp-map filetype if the ".bsp" extension is already being used for some other important purpose, in which case you would skip the third command.
+* You might not want to install the x-bsp-map filetype if you will never care about directly opening individual mapfiles.
 
 Up to you!
 
@@ -66,28 +48,17 @@ If you already have an existing application definition for launching Quake, you 
 
 ### Configuration
 
-**4. Set the Exec paths in both desktop files**
+**3. Set the Icon path in the "quake.desktop" file (optional)**
 
-Before you can install these ".desktop" files, you'll need to customize them. In both of them the value for the Exec path needs to be edited to point to the location where you have placed the "quakelaunch" or "quakecleanup" script accordingly. A "%f" should be placed after the path to indicate that the script can accept a filepath argument.
+You'll probably want an icon graphic for the Quake application. An example icon "quake-icon-512.png" is included in the "icons" directory here. Place that icon, or any other icon graphic you want to use for this, in some permanent location where it won't get deleted.
 
-For example, if you have placed the "quakelaunch" script at "/home/jimbob/bin/quakelaunch", then in your "quake.desktop" file the Exec line must look like this:
-```
-Exec=/home/jimbob/bin/quakelaunch %f
-```
-
-Similarly if you intend to use the gamedir/shortcut cleanup feature, you must edit the Exec value in "quakecleanup.desktop" so that it uses the path where you have placed the "quakecleanup" script.
-
-**5. Set the Icon path in the "quake.desktop" file**
-
-You'll also want an icon graphic for the Quake application. An example icon "quake-icon-512.png" is included in the "icons" directory here. Place that icon, or any other icon graphic you want to use for this, in some permanent location where it won't get deleted.
-
-Now edit the Icon value in "quake.desktop" to be that icon's filepath.
+Now in "quake.desktop", uncomment the line that sets its Icon attribute and edit the value to be that icon's filepath.
 
 Power users may want to edit other things about the desktop files. So FYI the most important aspect of the file is that its Exec path must point at the script as described above. And of course the MimeType list is significant. The name of the desktop file itself ("quake.desktop" or "quakecleanup.desktop") is also somewhat important; it's referenced when setting the default app for filetypes as described below, and it's also referenced inside the scripts when sending error notifications.
 
 ### Installation
 
-**6. Install the applications**
+**5. Install the applications**
 
 The commands below show how you would install these application definitions, from a shell prompt that is currently working in this "desktop_integration" directory. I'll show the commands first and then discuss how you might want to tweak them.
 ```bash
