@@ -77,7 +77,7 @@ There's a few reasons you might want to do things slightly differently, e.g.:
 
 The typical setup of these filetypes and applications will create these desktop behaviors:
 * Double-click on a ".quake" or ".bsp" file will launch the "Quake" application (which runs the "quakelaunch" script).
-* Right-click on a ".quake" file will also give you an "Open with" menu option to open with the "Quake mod cleanup" application (which runs the "quakecleanup" script).
+* Right-click on a ".quake" file will also give you an "Open with" menu option to open with the "Quake mod cleanup" application (which runs the "quakelaunch" script with a special initial "--cleanup" argument).
 * Double-click on a directory should have the same behavior as before -- i.e., opens it in a desktop window -- but right-click on a directory will give the option to open the directory with "Quake" or with "Quake mod cleanup"
 * Double-click on a ".zip" file should have the same behavior as before, but right-click on a ".zip" file will give the option to open with "Quake".
 

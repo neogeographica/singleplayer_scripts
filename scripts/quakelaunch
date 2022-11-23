@@ -71,7 +71,7 @@ function usage {
   message "usage: quakelaunch [archive|gamedir|foo.bsp|foo.quake]"
 }
 function cleanup_usage {
-  message "usage: quakecleanup gamedir|foo.quake"
+  message "usage: quakelaunch --cleanup gamedir|foo.quake"
 }
 
 # Function to make sure the config has been populated with what we need to
@@ -84,7 +84,7 @@ function basic_validation {
   fi
 }
 
-# First check to see if we are being run from quakecleanup.
+# First check to see if we are being run for cleanup.
 if [[ "$1" == "--cleanup" && $# != 2 ]]
 then
   cleanup_usage
@@ -183,7 +183,7 @@ then
   exit 0
 fi
 
-# Not a quakecleanup run, so let's do the launch logic.
+# Not a cleanup run, so let's do the launch logic.
 
 # Take care of the simplest arguments cases:
 
@@ -1403,7 +1403,7 @@ exit 1
 
 
 __DEFAULTS_CONF_START__
-‹ðwc quakelaunch-defaults.conf ÕYQoÜÆ~×¯ØÒ,:ªNú”âŒØNÄQ
+‹…i}c quakelaunch-defaults.conf ÕYQoÜÆ~×¯ØÒ,:ªNú”âŒØNÄQ
 É‚¢8ì‘{wŒH.³Kêtýõý¾Ù]’w’`Çh
 Î‰Üùfæ›™åõOã|e[e7ªßU^•f£‡º÷jSÕ&W¿ØA½¹V?^ßªÖ˜RõVyÓ‡¥÷ÚUz]>ÔíáìžÔƒQU«vpÊî[õÛ ïL­‡¶Øå…m7"Ö«sSõ;ãÔ¶¶k]+ëTgÜb«SVî"Ïs«zµÓ^µV5F·U»Uvè}Uš «™Ë^$µåü,ý¹ºæ-_Aâ¶Ð}4¶*_AéRÅs=O¥Á>ÞÜNfÂ:.*¬s¦èU§ûÝhâ©y°ÖžÂ–ÙW^õöŠ+¯þÁ•WxÖ²S}x„¬QæÁCŸ€¼ùŸ¨%žVj:P´zûÐ;¹M|uÕ¥ÝvhLË¨€«dW®Þox|toèþÙ¢~§{ÚWu­^ÿðóë_nÆàYZTªs+þÏ®LíwU±{ôÐÛÈº®ØY=ŽlU¡½q)'ºU¾3Eµ9ŠFi/„(¤¦”X¾‚v^ÙŽpÏëMo,µ·íË~
 î(Mrf"3éðÚÀv*‡C§µ©í^ ˆ€åa@ŠRÌƒn:x•ÛÓyeåÅÓ Å•º×jŒ´öE¯BPvËÃÎ½™öåM)g4•¦×UíLv¨Ë9P”-Z»³ÉF¯ASLašì^fËg>†÷Ì£ ÖádôdÆž+£æ®Z¨Öú”r‹ VU@ÖiWeB¤Î@6Ôò š[¼2}‘«~ÐR%f~|¯ö®êi^ƒd¦¹àƒÚq£îRÜ	|±p©Î)­Þ^·ãHyÇ!8%ðW„r\13 æQXÍDïf,_¸
