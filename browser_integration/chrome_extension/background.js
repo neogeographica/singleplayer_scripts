@@ -50,7 +50,7 @@ chrome.runtime.onInstalled.addListener(
         contexts: ["link"]
       }
     );
-    await chrome.offscreen.createDocument(
+    chrome.offscreen.createDocument(
       {
         url: 'offscreen.html',
         reasons: ['DOM_SCRAPING'],
