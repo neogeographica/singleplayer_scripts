@@ -96,13 +96,6 @@ chrome.runtime.onInstalled.addListener(
         contexts: ["link"]
       }
     );
-    chrome.offscreen.createDocument(
-      {
-        url: 'offscreen.html',
-        reasons: ['DOM_SCRAPING'],
-        justification: 'parsing received page to find any meta-refresh redirect'
-      }
-    );
   }
 );
 
@@ -273,7 +266,15 @@ chrome.contextMenus.onClicked.addListener(
       // a redirect. In Manifest V3 we can't do that here in the background
       // script (no DOMParser allowed) so we'll ask our "offscreen" page to
       // do it.
+      await chrome.offscreen.createDocument(
+        {
+          url: 'offscreen.html',
+          reasons: ['DOM_SCRAPING'],
+          justification: 'parsing received page to find any meta-refresh redirect'
+        }
+      );
       let redirectUrl = await chrome.runtime.sendMessage(page);
+      await chrome.offscreen.closeDocument();
       if (redirectUrl) {
         console.log("redirecting to " + url);
         url = redirectUrl;
