@@ -29,6 +29,11 @@
 // former instance is still keeping itself alive. That was before I "tweaked"
 // the keepalive to only happen during the handler so maybe it is fixed?
 
+// XXX I wonder if instead sending messages from a tab to here, we could send
+// messages back and forth between here and the offscreen page? (And obviously
+// keep the offscreen page open during the entire handler instead of just
+// during HTML parsing.) Would that serve as keepalive?
+
 var isInProgress = false
 
 const onUpdate = (tabId, info, tab) => /^https?:/.test(info.url) && findTab([tab]);
