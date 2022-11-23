@@ -68,11 +68,11 @@ The extension icon for "Open with Quake", visible in the Extensions puzzle-piece
 
 ## Chrome download handling
 
-The first time you use the "Open with Quake" menu item to download something, you should end up with a downloaded file that has the ".qz" extension, as shown in Chrome's downloads shelf. You could click on it now to open it with the Quake app. Or you can at this point arrange for such files to always be immediately opened without requiring a click.
+The first time you use the "Open with Quake" menu item to download something, you should end up with a downloaded file that has the ".qz" extension, as shown in Chrome's download-popup. You could click on it now to open it with the Quake app. Or you can at this point arrange for such files to always be immediately opened without requiring a click.
 
 **5. Set auto-open for ".qz" files (optional)**
 
-If you want these ".qz" files to always be opened automatically, rather than requiring you to click on them, you can use the drop-down menu next to a ".qz" file in the Chrome downloads shelf, and select "Always open files of this type". This will take effect the next time you use "Open with Quake".
+If you want these ".qz" files to always be opened automatically, rather than requiring you to click on them, you can right click on the download-popup and select "Always open files of this type". This will take effect the next time you use "Open with Quake".
 
 # Usage notes
 
