@@ -71,7 +71,7 @@ function usage {
   message "usage: quakelaunch [archive|gamedir|foo.bsp|foo.quake]"
 }
 function cleanup_usage {
-  message "usage: quakecleanup gamedir|foo.quake"
+  message "usage: quakelaunch --cleanup gamedir|foo.quake"
 }
 
 # Function to make sure the config has been populated with what we need to
@@ -84,7 +84,7 @@ function basic_validation {
   fi
 }
 
-# First check to see if we are being run from quakecleanup.
+# First check to see if we are being run for cleanup.
 if [[ "$1" == "--cleanup" && $# != 2 ]]
 then
   cleanup_usage
@@ -183,7 +183,7 @@ then
   exit 0
 fi
 
-# Not a quakecleanup run, so let's do the launch logic.
+# Not a cleanup run, so let's do the launch logic.
 
 # Take care of the simplest arguments cases:
 

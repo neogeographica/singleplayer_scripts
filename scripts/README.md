@@ -6,7 +6,7 @@ Once these are installed and working you can go over to the desktop_integration 
 
 # Setup
 
-Six steps are needed to get these scripts working. Those steps are numbered and called out below, with some other context and discussion around them.
+Five steps are needed to get these scripts working. Those steps are numbered and called out below, with some other context and discussion around them.
 
 ## Prerequisites
 
@@ -35,17 +35,13 @@ If you can't or don't want to install these things globally, there are various w
 
 The "quakelaunch" script from this directory must be copied to some directory that is in your PATH for executables. Make sure that the "quakelaunch" script in that location is marked as executable.
 
-**4. Put "quakecleanup" somewhere in your PATH (optional)**
-
-If you will be using ".quake" shortcuts (see below), it is nice to have an automated way to delete both the gamedir and its shortcut together. The "quakecleanup" script can be used for that. If you think you will want to use this script, then (as with "quakelaunch") you need to put it in your PATH and make sure it is marked executable.
-
 ## Configuration
 
-**5. Put the error sounds somewhere safe (optional)**
+**4. Put the error sounds somewhere safe (optional)**
 
 The "sounds" directory contains a selection of error beeps. If you want to use these sounds, make sure they are placed in a location where they will not get deleted. (Leaving them here among the files you downloaded for this repo is fine, if you're going to keep them intact.) Or find some other sounds you want to use.
 
-**6. Edit "quakelaunch.conf"**
+**5. Edit "quakelaunch.conf"**
 
 If this is your first time using the "quakelaunch" script on this system, at this point you should run it once. Just invoke "quakelaunch" from a shell prompt. "quakelaunch" will exit with a message about needing to edit your "quakelaunch.conf". Normally, "quakelaunch.conf" will be in the location "~/.config/quakelaunch/quakelaunch.conf". In any case, its location will be printed out as part of that message.
 
@@ -61,7 +57,7 @@ The scripts are meant to be used through desktop integration, but you can also r
 
 "quakelaunch" with one argument represents what will happen when you use the desktop integration to "open a file" for "Quake". The argument to "quakelaunch" can be a zip archive, some other kind of archive, a Quake gamedir, a ".quake" shortcut, or a bsp file inside the maps directory of a gamedir. This will trigger the various features/behaviors described in the top-level readme.
 
-"quakecleanup" with one argument represents what will happen when you use the desktop integration to "open a file" for "Quake mod cleanup". The argument to "quakecleanup" can be a Quake gamedir or a ".quake" shortcut. It will delete a gamedir and its associated shortcut(s).
+"quakelaunch --cleanup" with one additional argument represents what will happen when you use the desktop integration to "open a file" for "Quake mod cleanup". That final argument can be a Quake gamedir or a ".quake" shortcut. It will delete a gamedir and its associated shortcut(s).
 
 The sections below cover some of the interesting parts of these behaviors that can affect how you want to set up the "quakelaunch.conf" config file, and how you will use the features once they are installed.
 
@@ -82,8 +78,8 @@ You can define a value for shortcuts_dir in the config file if you want the laun
 Generally you won't need to know much about how shortcuts work, but here's some details that might come in handy at some point:
 * If a shortcut file contains the path to a gamedir, opening the shortcut (with "quakelaunch") will launch that gamedir. Shortcuts created by the launcher are like this.
 * If a shortcut file is empty (doesn't contain any non-whitespace), then opening it will just launch the gamedir that has the same basename as the shortcut.
-* If you use "quakecleanup" on a shortcut, it will also delete the gamedir that the shortcut points to.
-* If you use "quakecleanup" on a gamedir, it will also delete any shortcuts in the current shortcuts_dir that point to that gamedir.
+* If you use "quakelaunch --cleanup" on a shortcut, it will also delete the gamedir that the shortcut points to.
+* If you use "quakelaunch --cleanup" on a gamedir, it will also delete any shortcuts in the current shortcuts_dir that point to that gamedir.
 
 Note about "empty" shortcuts: you will want to make sure that they do contain some whitespace, even just a single space or carriage return character. This is because some Linux configurations will not correctly recognize the filetype of zero-length files, which undermines the desired shortcut behavior. So for example if you wanted to manually create an "empty"-style shortcut for the "hwjam2" gamedir, you could do:
 ```
@@ -189,7 +185,7 @@ Now try running it with an argument that is a path to an existing gamedir. It sh
 
 Finally, try running it with an argument that is a path to a zipfile containing a downloaded Quake mod or maps. It should install and then launch it.
 
-If these tests work you're probably good to go, but you can certainly also test "quakelaunch" with other arguments like a ".quake" shortcut file, or archives of other types. You can also try out the "quakecleanup" script with a path to a shortcut or gamedir to check that it does the necessary deletions.
+If these tests work you're probably good to go, but you can certainly also test "quakelaunch" with other arguments like a ".quake" shortcut file, or archives of other types. You can also try out "quakelaunch --cleanup" with a path to a shortcut or gamedir to check that it does the necessary deletions.
 
 # Uninstallation
 
