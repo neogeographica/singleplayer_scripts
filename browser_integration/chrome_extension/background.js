@@ -13,6 +13,50 @@
  * limitations under the License.
  */
 
+// Workaround for service-worker being terminated for "idleness" even while
+// still doing work. (Thanks to wOxxOm.)
+
+// XXX This is REALLY annoying. Basically we have to keep finding tabs and
+// asking them to ping us back. When the necessary offscreen-docs features
+// for MV3 land on main-branch Chrome, I need to start periodically checking
+// to see whether this issue has been fixed (or can be more gracefully
+// addressed). If not, then maybe the code here can be tweaked to only do
+// the tab-communication while the menu click listener is active. Something
+// like:
+// - don't do the initial findTab here, instead do it when we call
+//   setStatus(true, "")
+// - in findTab, do nothing (except the removeListener I guess) if not in
+//   progress. Need to add a global variable for that.
+
+// XXX The tweak might really be necessary. I've observed one case of things
+// getting "stuck" where the menu item has no effect... haven't been able to
+// debug yet but perhaps could be Chrome waiting to start another service
+// worker instance while the former instance is still keeping itself alive.
+
+const onUpdate = (tabId, info, tab) => /^https?:/.test(info.url) && findTab([tab]);
+findTab();
+chrome.runtime.onConnect.addListener(port => {
+  if (port.name === 'keepAlive') {
+    setTimeout(() => port.disconnect(), 250e3);
+    port.onDisconnect.addListener(() => findTab());
+  }
+});
+async function findTab(tabs) {
+  if (chrome.runtime.lastError) { /* tab was closed before setTimeout ran */ }
+  for (const {id: tabId} of tabs || await chrome.tabs.query({url: '*://*/*'})) {
+    try {
+      await chrome.scripting.executeScript({target: {tabId}, func: connect});
+      chrome.tabs.onUpdated.removeListener(onUpdate);
+      return;
+    } catch (e) {}
+  }
+  chrome.tabs.onUpdated.addListener(onUpdate);
+}
+function connect() {
+  chrome.runtime.connect({name: 'keepAlive'})
+    .onDisconnect.addListener(connect);
+}
+
 /*
  * The first section of this file (until a comment similar to this one) is
  * copyright Joel Baxter.
@@ -252,7 +296,6 @@ chrome.contextMenus.onClicked.addListener(
     }
   }
 );
-
 
 /*
  * The remainder of this file is copyright Mozilla Foundation.
