@@ -12,6 +12,10 @@ If you have already done the [desktop integration](../desktop_integration/README
 
 There are five steps in the browser integration process. Those steps are numbered and called out below, with some other context and discussion around them.
 
+**Note:** Currently there are two versions of the extension available here: one in the "chrome_extension" folder, and one in the "chrome_extension_manifest_v3" folder. **The version in the "chrome_extension" folder is the current stable version, and it's the one you should currently use.** So the directions below will assume that.
+
+The version in the "chrome_extension_manifest_v3" folder is an in-development version to handle extension changes in future versions of the Chrome browser. Currently it only works in Chrome 109.0.5414.0 or later (which, as of the last time this doc was updated, is only available on the "dev" channel of Chrome builds). Google's roadmap will require using this version in June 2023, so at some point before then I'll switch to having this one be the stable default version. For now though it's probably only for the really curious web developer to look at.
+
 ## Prerequisites
 
 **1. Use "browser_integration" as your working directory**
@@ -45,13 +49,9 @@ xdg-mime default quake.desktop application/x-qz
 
 The Chrome extension here adds an "Open with Quake" context menu item available when you right-click on a link in a webpage. All this really does is download the file from the link with ".qz" added to the end of the downloaded file's name.
 
-Because this is a niche extension that requires other system setup to be useful, I'm not putting it on the Chrome web store. I'm not even packaging it up, because I encourage you to look into the "chrome_extension" subdirectory here and examine the "background.js" script file that implements the extension. Even if you don't know anything about how Chrome extensions work, you can satisfy yourself that this extension doesn't do anything nefarious &mdash; in particular, that it doesn't make any network connections except to do a "fetch" (download) of the thing that you asked to download. It will only fetch the URL you clicked on, or a URL that the clicked link redirects to.
+Because this is a niche extension that requires other system setup to be useful, I'm not putting it on the Chrome web store. I'm not even packaging it up, because I encourage you to look into the "chrome_extension" subdirectory here and examine the files that implement the extension.
 
-XXX I need to rethink how to present this section, since MV3 workarounds have made the code more weird.
-
-A couple of things to note in that regard:
-* The first part of the script is my code for performing the download and setting the file extension. While it's a little surprising how much is involved with just doing that, you can see that there is only one spot that does an outgoing network request, with "fetch". Originally the URL given to "fetch" is the user-selected link (url = info.linkUrl). If that returns a redirect to some other URL, subsequent code will set "url" to that new URL and loop back up to try the fetch again.
-* The second part is code for some header processing that is lifted directly from https://github.com/mozilla/pdf.js . It purely does data munging, no network access. (Why did I cram it into the same file here? An upcoming change in Chrome extensions seems to make it more difficult to load an extension from multiple script files, so I'm looking ahead to that.)
+Originally I had a very simple explanation of the JavaScript here, but over time the extension has inevitably become more complicated, so I've offloaded the explanation to a README.md file inside the "chrome_extension" folder. I'm less sanguine now about the usefulness of me just saying "hey there's nothing nefarious in this code, examine it yourself"... but that's what I'm stuck with at the moment. And I don't have an indication that there are many/any other users of this, so I'll leave it as-is for now.
 
 **4. Load the extension**
 
