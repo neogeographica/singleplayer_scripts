@@ -13,57 +13,6 @@
  * limitations under the License.
  */
 
-// Workaround for service-worker being terminated for "idleness" even while
-// still doing work. (Thanks to wOxxOm.) Modified to try to only do
-// keepalive while our context menu handler is active.
-
-// XXX This is REALLY annoying. Basically we have to keep finding tabs and
-// asking them to ping us back. When the necessary offscreen-docs features
-// for MV3 land on main-branch Chrome, I need to start periodically checking
-// to see whether this issue has been fixed (or can be more gracefully
-// addressed).
-
-// XXX I've observed one case of things getting "stuck" where the menu item
-// has no effect... haven't been able to debug yet but perhaps could have
-// been Chrome waiting to start another service worker instance while the
-// former instance is still keeping itself alive. That was before I "tweaked"
-// the keepalive to only happen during the handler so maybe it is fixed?
-
-// XXX I wonder if instead sending messages from a tab to here, we could send
-// messages back and forth between here and the offscreen page? (And obviously
-// keep the offscreen page open during the entire handler instead of just
-// during HTML parsing.) Would that serve as keepalive?
-
-var isInProgress = false
-
-const onUpdate = (tabId, info, tab) => /^https?:/.test(info.url) && findTab([tab]);
-chrome.runtime.onConnect.addListener(port => {
-  if (port.name === 'keepAlive') {
-    console.log("keepalive ping...");
-    setTimeout(() => port.disconnect(), 250e3);
-    port.onDisconnect.addListener(() => findTab());
-  }
-});
-async function findTab(tabs) {
-  if (!isInProgress) {
-    chrome.tabs.onUpdated.removeListener(onUpdate);
-    return;
-  }
-  if (chrome.runtime.lastError) { /* tab was closed before setTimeout ran */ }
-  for (const {id: tabId} of tabs || await chrome.tabs.query({url: '*://*/*'})) {
-    try {
-      await chrome.scripting.executeScript({target: {tabId}, func: connect});
-      chrome.tabs.onUpdated.removeListener(onUpdate);
-      return;
-    } catch (e) {}
-  }
-  chrome.tabs.onUpdated.addListener(onUpdate);
-}
-function connect() {
-  chrome.runtime.connect({name: 'keepAlive'})
-    .onDisconnect.addListener(connect);
-}
-
 /*
  * The first section of this file (until a comment similar to this one) is
  * copyright Joel Baxter.
@@ -130,7 +79,6 @@ chrome.alarms.onAlarm.addListener(
 // Status-update function. Controls whether menu item is enabled and what
 // progress percentage to show.
 function setStatus(inProgress, message) {
-  isInProgress = inProgress
   chrome.contextMenus.update(CONTEXT_MENU_ID, {enabled: !inProgress});
   chrome.action.setBadgeText({text: message});
   if (inProgress) {
@@ -189,8 +137,6 @@ chrome.contextMenus.onClicked.addListener(
     chrome.alarms.clear(ICON_CLEAR_ALARM);
     // Disable the menu item.
     setStatus(true, "");
-    // Start our keepalive.
-    findTab();
     // Note that we can't give the original url to chrome.downloads.download
     // because that will force the MIME type and the file extension, ignoring
     // whatever type/extension we request. So let's fetch it internally.

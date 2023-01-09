@@ -17,26 +17,9 @@ So we'll just look at that first part of "background.js".
 
 "offscreen.html" exists only to load and run "offscreen.js".
 
-# An Annoying Workaround
-
-The first block of code is to deal with an unfortunate behavior in Manifest V3: Chrome can easily decide that an extension is "idle" and kill it even while the extension is still doing work. Because of that, while we are doing work (isInProgress == true), every few minutes the code must find some open tab and ask it to send the extension a "ping" message. Chrome sees this activity and avoids killing the extension.
-
-This is frankly a weird thing to do and the code is not easy for a reviewer to understand, so hopefully Google will change/fix this behavior and I can axe this part of the code. FYI though the workaround code starts here:
-```javascript
-var isInProgress = false
-```
-and ends here:
-```javascript
-function connect() {
-  chrome.runtime.connect({name: 'keepAlive'})
-    .onDisconnect.addListener(connect);
-}
-```
-That "isInProgress" variable gets set appropriately in other functions below; it should be true only while the extension is actively working to download a file.
-
 # The Interesting Part
 
-In the remainder of my code (before we get to the parts copied from that Mozilla repo) there follows a bunch of cruft that has to do with inserting the "Open with Quake" option into the right-click menu, handling various download events and errors, and managing the little extension badge in the Chrome toolbar. The most important thing to see though is when and how the extension does communication outside the browser.
+There's a bunch of cruft in "background.js" that has to do with inserting the "Open with Quake" option into the right-click menu, handling various download events and errors, and managing the little extension badge in the Chrome toolbar. The most important thing to see though is when and how the extension does communication outside the browser.
 
 To that end, note that there is only one spot that does an outgoing network request, with "fetch(url)". This is inside a function attached to the right-click menu, so look through the code for this line:
 ```javascript

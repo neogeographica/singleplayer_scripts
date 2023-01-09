@@ -14,7 +14,7 @@ There are five steps in the browser integration process. Those steps are numbere
 
 **Note:** Currently there are two versions of the extension available here: one in the "chrome_extension" folder, and one in the "chrome_extension_manifest_v3" folder. **The version in the "chrome_extension" folder is the current stable version, and it's the one you should currently use.** So the directions below will assume that.
 
-The version in the "chrome_extension_manifest_v3" folder is an in-development version to handle extension changes in future versions of the Chrome browser. Currently it only works in Chrome 109.0.5414.0 or later (which, as of the last time this doc was updated, is only available on the "dev" channel of Chrome builds). Google's roadmap will require using this version in June 2023, so at some point before then I'll switch to having this one be the stable default version. For now though it's probably only for the really curious web developer to look at.
+The version in the "chrome_extension_manifest_v3" folder is an in-development version to handle extension changes in future versions of the Chrome browser. Currently it only works in Chrome 110.0.5469.0 or later (which, as of the last time this doc was updated, is only available on the "dev" channel of Chrome builds). Google's roadmap will require using this version in June 2023, so at some point before then I'll switch to having this one be the stable default version. For now though it's probably only for the really curious web developer to look at.
 
 ## Prerequisites
 
