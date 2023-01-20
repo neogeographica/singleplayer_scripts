@@ -123,7 +123,8 @@ self.addEventListener(
         setStatus(false, "err");
       }
     }
-  }
+  },
+  true
 );
 
 // Define what happens when our context menu item is used.
