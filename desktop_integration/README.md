@@ -48,13 +48,16 @@ If you already have an existing application definition for launching Quake, you 
 
 ### Configuration
 
-**3. Set the Icon path in the "quake.desktop" file (optional)**
+**3. Set the Icon path and other things in the ".desktop" files (optional)**
 
 You'll probably want an icon graphic for the Quake application. An example icon "quake-icon-512.png" is included in the "icons" directory here. Place that icon, or any other icon graphic you want to use for this, in some permanent location where it won't get deleted.
 
 Now in "quake.desktop", uncomment the line that sets its Icon attribute and edit the value to be that icon's filepath.
 
-Power users may want to edit other things about the desktop files. So FYI the most important aspect of the file is that its Exec path must point at the script as described above. And of course the MimeType list is significant. The name of the desktop file itself ("quake.desktop" or "quakecleanup.desktop") is also somewhat important; it's referenced when setting the default app for filetypes as described below, and it's also referenced inside the scripts when sending error notifications.
+Power users may want to edit other things about the two ".desktop" files. A few notes:
+* The most important aspect of each file is that its Exec path must properly locate the "quakelaunch" script. If you placed that script in a directory in your PATH as was recommended, then you don't need to change anything here; otherwise you will need to make this value be the whole absolute path to "quakelaunch".
+* The MimeType list declares the types of files this application is expected to be able to open. The list you'll see in these .desktop files is complete for the basic/common filetypes we expect to deal with. Note that if you later choose to open other kinds of files with the app (such as 7z archives, rar archives, etc.) those associations will also get remembered. Normally there's no need to modify this list.
+* The name of the desktop file itself ("quake.desktop" or "quakecleanup.desktop") is also significant, so don't change it unless you know what you're doing. This name is referenced when setting the default app for filetypes as described below, and it's also referenced inside the scripts when sending error notifications.
 
 ### Installation
 
