@@ -12,9 +12,9 @@ If you have already done the [desktop integration](../desktop_integration/README
 
 There are five steps in the browser integration process. Those steps are numbered and called out below, with some other context and discussion around them.
 
-**Note:** Currently there are two versions of the extension available here: one in the "chrome_extension" folder, and one in the "chrome_extension_manifest_v3" folder. **The version in the "chrome_extension" folder is the current stable version, and it's the one you should currently use.** So the directions below will assume that.
+**Note:** Currently there are two versions of the extension available here: one in the "chrome_extension" folder, and one in the "chrome_extension_old" folder. **The version in the "chrome_extension" folder is the current stable version, and it's the one you should currently use. It works in Chrome version 110.0.5469.0 or later.** So the directions below will assume that.
 
-The version in the "chrome_extension_manifest_v3" folder is an in-development version to handle extension changes in future versions of the Chrome browser. It works in Chrome version 110.0.5469.0 or later. Google's roadmap will require using this version in June 2023, so at some point before then I'll switch to having this one be the stable default version. For now though it's probably only for the really curious web developer to look at.
+The version in the "chrome_extension_old" folder is the older "Manifest V2" implementation. At some point, Chrome may remove support for this kind of extension... "Manifest V3" is their way forward. For now though I'm leaving this older version in the repo just in case someone needs/wants it, since it does still work (as of writing this in May 2023).
 
 ## Prerequisites
 
