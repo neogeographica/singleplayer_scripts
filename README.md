@@ -24,7 +24,7 @@ This repo shares some ways that I've customized my singleplayer Quake setup on L
 <img src="browser.gif">
 </p>
 
-I currently use a variant of Ubuntu called elementary OS. So these files and commands should work on Ubuntu, elementary OS, or other Ubuntu variants. If not (or if they can also be tweaked to be compatible with other Linux flavors) then pull requests to improve them are welcome.
+I currently use elementary OS and Pop!\_OS, both based on Ubuntu. So these files and commands should work on Ubuntu, elementary OS, Pop!\_OS, or other Ubuntu-likes. If not (or if they can also be tweaked to be compatible with other Linux flavors) then pull requests to improve them are welcome.
 
 # Features
 
