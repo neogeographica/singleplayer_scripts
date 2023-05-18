@@ -36,6 +36,23 @@ There's a few reasons you might want to do things slightly differently, e.g.:
 
 Up to you!
 
+> Note that if you install an icon for ".quake" shortcuts using the xdg-icon-resource command above, but shortcut files still do not display the icon, then you probably need to install the icon specifically for your current desktop theme.
+>
+> How you determine the current desktop theme will vary. You may be able to find it in a settings GUI. There are also ways to find the theme using the command line. For example if your desktop environment is based on GNOME, you could use this command:
+> ```bash
+> gsettings get org.gnome.desktop.interface icon-theme
+> ```
+> Or if based on KDE, this command:
+> ```bash
+> kreadconfig5 --group Icons --key Theme
+> ```
+> (For XFCE, or for older versions of GNOME/KDE, you may need to use different commands. See the [UNIX & Linux StackExchange](https://unix.stackexchange.com/questions/419895/if-i-have-a-mime-type-how-do-i-get-its-associated-icon-from-the-current-appearan) for a more detailed discussion.)
+>
+> Once you know the theme, you can use it in the "--theme" argument to the xdg-icon-resource command. For example in Pop!\_OS 22.04 LTS, which uses a GNOME desktop environment, the above gsettings command will tell me that my theme is called "Pop". Then I can use the following xdg-icon-resource command to install the icon... same as the earlier example, just with an additional "--theme" argument:
+> ```bash
+> xdg-icon-resource install --theme Pop --context mimetypes --novendor --mode user --size 128 icons/quake-icon-128.png application-x-quake
+> ```
+
 ## Applications
 
 Application definitions in ".desktop" files can be used to support launching applications from your system's apps menu, and for defining programs that can process certain filetypes. We'll be making use of both of those behaviors.
@@ -125,3 +142,5 @@ xdg-mime uninstall --mode user x-quake.xml
 xdg-mime uninstall --mode user x-bsp-map.xml
 update-mime-database ~/.local/share/mime
 ```
+
+Note that if you originally installed the icon using an additional "--theme" argument, you should also use that same theme argument when uninstalling it.
