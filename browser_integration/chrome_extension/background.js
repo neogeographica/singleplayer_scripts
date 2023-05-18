@@ -105,13 +105,14 @@ self.addEventListener(
   'fetch',
   function(event) {
     if (event.request.url in blobForUrl) {
+      const [blob, fileName] = blobForUrl[event.request.url];
       try {
         event.respondWith(
           new Response(
-            blobForUrl[event.request.url],
+            blob,
             {
               status: 200,
-              headers: {'Content-Disposition': 'attachment'}
+              headers: {'Content-Disposition': 'attachment;filename=' + fileName}
             }
           )
         );
@@ -239,9 +240,12 @@ chrome.contextMenus.onClicked.addListener(
       }
     }
     // Compose a virtual URL representing this content.
-    virtualUrl = chrome.runtime.getURL(file + ".qz");
+    virtualUrl = chrome.runtime.getURL(encodeURI(file) + ".qz");
     // Create a "blob" from the fetched chunks, with the MIME type we want.
-    blobForUrl[virtualUrl] = new Blob(chunks, {type : 'application/x-qz'});
+    blobForUrl[virtualUrl] = [
+      new Blob(chunks, {type : 'application/x-qz'}),
+      file + ".qz"
+    ];
     // Open a new tab to trigger the fetch.
     let newTab = await chrome.tabs.create({
       active: false,
