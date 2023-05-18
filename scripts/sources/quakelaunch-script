@@ -16,7 +16,7 @@ shopt -s nocaseglob extglob
 function beep {
   if [[ -n "$beep_player" && ${#beepsound[@]} -ne 0 ]]
   then
-    "$beep_player" ${beepsound[$RANDOM % ${#beepsound[@]}]}
+    "$beep_player" "${beepsound[$RANDOM % ${#beepsound[@]}]}"
   fi
 }
 
@@ -333,7 +333,7 @@ function recap_files {
     while IFS= read -r file
     do
       filebase=${file%.*}
-      fileext=$(echo ${file##*.} | tr '[:upper:]' '[:lower:]')
+      fileext=$(echo "${file##*.}" | tr '[:upper:]' '[:lower:]')
       mv "$file" "$filebase".$fileext 2>/dev/null
     done <<< "$extfiles"
   fi
@@ -421,7 +421,7 @@ function jam_config {
       then
         continue
       fi
-      mapname=$(basename ${map%.*})
+      mapname=$(basename "${map%.*}")
       j=$(expr $i + 1)
       aliases="$aliases"$'\n'"alias jam_map_$i \"alias jam jam_map_$j; map $mapname\""
       i=$j
@@ -1098,7 +1098,7 @@ then
     if [[ -n "$lastsave" ]]
     then
       current_startmap=$(savemap "$lastsave")
-      startmap_args="+load \"$(basename ${lastsave%.*})\""
+      startmap_args="+load \"$(basename "${lastsave%.*}")\""
     fi
   fi
   # Save our calculated args if necessary.

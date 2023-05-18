@@ -16,7 +16,7 @@ shopt -s nocaseglob extglob
 function beep {
   if [[ -n "$beep_player" && ${#beepsound[@]} -ne 0 ]]
   then
-    "$beep_player" ${beepsound[$RANDOM % ${#beepsound[@]}]}
+    "$beep_player" "${beepsound[$RANDOM % ${#beepsound[@]}]}"
   fi
 }
 
@@ -333,7 +333,7 @@ function recap_files {
     while IFS= read -r file
     do
       filebase=${file%.*}
-      fileext=$(echo ${file##*.} | tr '[:upper:]' '[:lower:]')
+      fileext=$(echo "${file##*.}" | tr '[:upper:]' '[:lower:]')
       mv "$file" "$filebase".$fileext 2>/dev/null
     done <<< "$extfiles"
   fi
@@ -421,7 +421,7 @@ function jam_config {
       then
         continue
       fi
-      mapname=$(basename ${map%.*})
+      mapname=$(basename "${map%.*}")
       j=$(expr $i + 1)
       aliases="$aliases"$'\n'"alias jam_map_$i \"alias jam jam_map_$j; map $mapname\""
       i=$j
@@ -1098,7 +1098,7 @@ then
     if [[ -n "$lastsave" ]]
     then
       current_startmap=$(savemap "$lastsave")
-      startmap_args="+load \"$(basename ${lastsave%.*})\""
+      startmap_args="+load \"$(basename "${lastsave%.*}")\""
     fi
   fi
   # Save our calculated args if necessary.
@@ -1403,7 +1403,7 @@ exit 1
 
 
 __DEFAULTS_CONF_START__
-‹…i}c quakelaunch-defaults.conf ÕYQoÜÆ~×¯ØÒ,:ªNú”âŒØNÄQ
+‹‹ëd quakelaunch-defaults.conf ÕYQoÜÆ~×¯ØÒ,:ªNú”âŒØNÄQ
 É‚¢8ì‘{wŒH.³Kêtýõý¾Ù]’w’`Çh
 Î‰Üùfæ›™åõOã|e[e7ªßU^•f£‡º÷jSÕ&W¿ØA½¹V?^ßªÖ˜RõVyÓ‡¥÷ÚUz]>ÔíáìžÔƒQU«vpÊî[õÛ ïL­‡¶Øå…m7"Ö«sSõ;ãÔ¶¶k]+ëTgÜb«SVî"Ïs«zµÓ^µV5F·U»Uvè}Uš «™Ë^$µåü,ý¹ºæ-_Aâ¶Ð}4¶*_AéRÅs=O¥Á>ÞÜNfÂ:.*¬s¦èU§ûÝhâ©y°ÖžÂ–ÙW^õöŠ+¯þÁ•WxÖ²S}x„¬QæÁCŸ€¼ùŸ¨%žVj:P´zûÐ;¹M|uÕ¥ÝvhLË¨€«dW®Þox|toèþÙ¢~§{ÚWu­^ÿðóë_nÆàYZTªs+þÏ®LíwU±{ôÐÛÈº®ØY=ŽlU¡½q)'ºU¾3Eµ9ŠFi/„(¤¦”X¾‚v^ÙŽpÏëMo,µ·íË~
 î(Mrf"3éðÚÀv*‡C§µ©í^ ˆ€åa@ŠRÌƒn:x•ÛÓyeåÅÓ Å•º×jŒ´öE¯BPvËÃÎ½™öåM)g4•¦×UíLv¨Ë9P”-Z»³ÉF¯ASLašì^fËg>†÷Ì£ ÖádôdÆž+£æ®Z¨Öú”r‹ VU@ÖiWeB¤Î@6Ôò š[¼2}‘«~ÐR%f~|¯ö®êi^ƒd¦¹àƒÚq£îRÜ	|±p©Î)­Þ^·ãHyÇ!8%ðW„r\13 æQXÍDïf,_¸
