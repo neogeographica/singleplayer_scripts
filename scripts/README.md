@@ -10,24 +10,36 @@ Five steps are needed to get these scripts working. Those steps are numbered and
 
 ## Prerequisites
 
-**1. Install utility "aunpack"**
+**1. Install utilities**
 
-If you want to use the auto-install feature, you will need to have installed the utility "aunpack", which is part of [atool](https://www.nongnu.org/atool/). Technically this is an optional step but it unlocks a huge part of the convenience of using these scripts, so I would always recommend doing this.
+Technically each of these utilities used by the "quakelaunch" script are optional, but at least the first two of these are involved in implementing fundamental features of the script and are therefore highly recommended.
+
+If you want to use the auto-install feature -- which unlocks a huge part of the convenience of using these scripts -- you will need to have installed the utility "aunpack", which is part of [atool](https://www.nongnu.org/atool/).
 
 In my case I installed that utility and its dependencies with:
 ```bash
 sudo apt-get install atool
 ```
-You may then want/need to install some of the various tools mentioned at the bottom of the atool webpage. For example, I already had tar, zip, gzip, and p7zip... but I needed to install rar as well in order to handle .rar archives.
+(You may then also want/need to install some of the various tools mentioned at the bottom of the atool webpage. For example, I already had tar, zip, gzip, and p7zip on my system... but I needed to install rar as well in order to handle .rar archives.)
+
+Next, if you want the script to generate notifications when errors happen, the "notify-send" utility needs to be present. In some cases your system may already include this utility by default; if not, you can find a package to install that will include it. For example on Pop!\_OS 22.04 LTS I needed to do this:
+```bash
+sudo apt-get install libnotify-bin
+```
+That package should also be appropriate for other Ubuntu-like systems.
+
+Finally, you may want to install a utility for playing a sound when a notification is generated. By default the "paplay" utility will be used. However, you can change that in your configuration file (as described below) if you don't have or wish to install "paplay", or if you just want to use some other sound player.
 
 **2. Install Python module "expak" (optional)**
 
-The main script can also optionally use my Python module [expak](https://github.com/neogeographica/expak) to look inside pak files and make better decisions about things like what map to launch and whether a gamedir is "standalone" (has its own progs.dat). To use this module, you will need Python 2 or Python 3 installed; the script will use whatever executable has the name "python". The expak module will need to be installed for that version of Python with:
+The main script can also optionally use my Python module [expak](https://github.com/neogeographica/expak) to look inside pak files and make better decisions about things like what map to launch and whether a gamedir is "standalone" (has its own progs.dat). To use this module, you will need Python 2 or Python 3 installed; the script will use whatever executable has the name "python". (In the case of Pop!\_OS 22.04 LTS, which only has "python3", I needed to install the "python-is-python3" package in order to have a "python" executable available.)
+
+The expak module will need to be installed for that version of Python using the Python package manager "pip", e.g.:
 ```bash
 sudo pip install expak
 ```
 
-If you can't or don't want to install these things globally, there are various ways to tackle that, but I think that's outside the scope of this doc.
+If you can't or don't want to install this module globally, there are various ways to tackle that, but I think that -- and any other instruction about installing or using "pip" -- is outside the scope of this doc.
 
 ## Installation
 
