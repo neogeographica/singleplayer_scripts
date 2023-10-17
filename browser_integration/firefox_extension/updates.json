@@ -1,0 +1,12 @@
+{
+  "addons": {
+    "open-with-quake@neogeographica.com": {
+      "updates": [
+        {
+          "version": "1.3.0",
+          "update_link": "https://raw.githubusercontent.com/neogeographica/singleplayer_scripts/main/browser_integration/firefox_extension/web-artifacts/47f127f6aadc4217babb-1.3.0.xpi"
+        }
+      ]
+    }
+  }
+}
