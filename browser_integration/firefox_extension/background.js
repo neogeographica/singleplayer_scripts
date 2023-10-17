@@ -53,17 +53,15 @@ browser.runtime.onInstalled.addListener(
 var archiveFilename = "";
 var tempTab = null;
 
-
-// XXX The setHeaders and finalize listeners should, for real bulletproofness,
-// check that the request is coming from this extension. I think the
-// documentUrl and/or originUrl can help with that.
-
-
 // Set the Content-Disposition header with desired filename as attachment,
 // and Content-Type with the appropriate MIME type for .qz files.
 function setHeaders(e) {
   if (archiveFilename === "") {
     console.log("setHeaders called without archiveFilename set");
+    return {};
+  }
+  if (e.originUrl != browser.runtime.getURL('')) {
+    console.log("setHeaders called from non-extension origin");
     return {};
   }
   const contentDisposition = {
@@ -102,7 +100,10 @@ function setStatus(inProgress, message) {
     }
     archiveFilename = "";
     if (tempTab) {
-      browser.tabs.remove(tempTab.id);
+      tempTab.then(
+        (tabObj) => {browser.tabs.remove(tabObj.id);},
+        (reason) => {},
+      );
       tempTab = null;
     }
     if (message !== "") {
@@ -132,6 +133,10 @@ function setStatus(inProgress, message) {
 
 // Clean up when request is done.
 function finalize(e) {
+  if (e.originUrl != browser.runtime.getURL('')) {
+    console.log("finalize called from non-extension origin");
+    return {};
+  }
   setStatus(false, "");
 }
 
@@ -227,22 +232,18 @@ browser.menus.onClicked.addListener(
       {urls: [url]},
       [],
     );
-    // XXX It's technically possible that finalize, which wants to look
-    // at tempTab, could fire before we populate tempTab with the completed
-    // promise below. Probably we should just leave tempTab as a promise and
-    // let finalize do "then" on the promise.
     // Open a new background tab to do the download.
-    tempTab = await browser.tabs.create({
+    tempTab = browser.tabs.create({
       active: false,
       url: url
     });
-    // XXX Don't think the below condition actually is how the error would be
-    // represented... the await would throw. Need to do a "then" on the
-    // promise here and handle the rejection case.
-    if (!tempTab) {
-      console.log("failed to open tab with the archive file URL");
-      setStatus(false, "err");
-    }
+    tempTab.then(
+      {},
+      (reason) => {
+        console.log("failed to open tab with the archive file URL: " + reason);
+        setStatus(false, "err");
+      },
+    );
   }
 );
 
