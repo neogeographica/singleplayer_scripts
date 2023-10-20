@@ -1,0 +1,11 @@
+Cf. https://addons.mozilla.org/en-US/developers/addons for API key and secret, and to check if the process worked.
+
+1) Update manifest.json with new version.
+
+2) In same directory as manifest.json: web-ext sign --api-key=<my key> --api-secret=<my secret>
+
+3) Modify updates.json to add new version, referencing new file under web-artifacts.
+
+4) Check https://addons.mozilla.org/en-US/developers/addons to see that the new version is there.
+
+5) Push updated code/metadata/packages to GitHub.
