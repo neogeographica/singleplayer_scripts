@@ -36,18 +36,21 @@ const CONTEXT_MENU_ID = "OPEN_WITH_QUAKE";
 // downloaded file from within a Firefox extension without requiring further
 // user interaction.
 
-// When this extension is loaded in, set up our context menu item.
-browser.runtime.onInstalled.addListener(
-  function() {
-    browser.menus.create(
-      {
-        id: CONTEXT_MENU_ID,
-        title: "Open with Quake",
-        contexts: ["link"]
-      }
-    );
-  }
-);
+// When this extension is loaded in, set up our context menu item. To work
+// around some Firefox oddities we'll trigger it from onInstalled and
+// onStartup both. This can cause a redundant create call that fails with an
+// error but oh well.
+function createMenuItem() {
+  browser.menus.create(
+    {
+      id: CONTEXT_MENU_ID,
+      title: "Open with Quake",
+      contexts: ["link"]
+    }
+  );
+}
+browser.runtime.onInstalled.addListener(createMenuItem);
+browser.runtime.onStartup.addListener(createMenuItem);
 
 // Global vars used by listener callbacks.
 var archiveFilename = "";
