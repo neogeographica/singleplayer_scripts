@@ -1,3 +1,5 @@
+Just some notes for my own reference when creating the .xpi file.
+
 Cf. https://addons.mozilla.org/en-US/developers/addons for API key and secret, and to check if the process worked.
 
 1) Update manifest.json with new version.
