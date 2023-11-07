@@ -20,7 +20,7 @@ This repo shares some ways that I've customized my singleplayer Quake setup on L
 </p>
 
 <p align="center">
-<b>Optional Chrome browser integration</b><br/>
+<b>Optional browser integration</b><br/>
 <img src="browser.gif">
 </p>
 
@@ -58,9 +58,9 @@ Right-click on a gamedir and choose to open it with "Quake mod cleanup". The gam
 
 (If you don't use ".quake" shortcuts or have a userdata directory then you don't care about this feature.)
 
-## Optional Chrome browser integration
+## Optional browser integration
 
-Right-click on a download link in a webpage and select "Open with Quake"; same features as described above for archive files.
+In Chrome or Firefox, right-click on a download link in a webpage and select "Open with Quake". Same features as described above for archive files.
 
 # Caveats
 
@@ -112,7 +112,7 @@ Then you can hook up those behaviors to right-click and double-click actions in 
 
 ## Browser integration
 
-It's certainly not required, but if you want to enable the "Open with Quake" behavior in Chrome then see [browser_integration/README.md](browser_integration/README.md).
+It's certainly not required, but if you want to enable the "Open with Quake" behavior in Chrome or Firefox then see [browser_integration/README.md](browser_integration/README.md).
 
 # Reporting issues
 

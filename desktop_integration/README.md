@@ -2,7 +2,7 @@
 
 These are the files necessary to connect the script behaviors to desktop actions.
 
-Once these files have been used to set up desktop integration, the features described in the [top-level readme](../README.md) will be available. And if you want, you can then do the [Chrome browser integration](../browser_integration/README.md)
+Once these files have been used to set up desktop integration, the features described in the [top-level readme](../README.md) will be available. And if you want, you can then do the [browser integration](../browser_integration/README.md) for Chrome or Firefox.
 
 # Setup
 
