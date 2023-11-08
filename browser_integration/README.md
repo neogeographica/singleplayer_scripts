@@ -51,7 +51,7 @@ The browser extension adds an "Open with Quake" context menu item available when
 
 This extension is available for both Chrome and Firefox. Follow the appropriate section below depending on which browser you are using.
 
-## Chrome extension
+### Chrome extension
 
 Because this is a niche extension that requires other system setup to be useful, I'm not putting it on the Chrome web store.
 
@@ -76,15 +76,13 @@ Note that the Chrome extension will never be automatically updated in your brows
 
 The extension icon for "Open with Quake", visible in the Extensions puzzle-piece menu, will have a progress percent overlaid on it when downloading something. It will also have a momentary red badge if a download error happens. If you want to make this info more visible, you can "pin" the extension so it will always be shown in the toolbar. You can do this from the Extensions puzzle-piece menu by clicking on the pin icon to the right of "Open with Quake".
 
-## Chrome download handling
+**6. Set auto-open for ".qz" files (optional)**
 
 The first time you use the "Open with Quake" menu item to download something, you should end up with a downloaded file that has the ".qz" extension, as shown in Chrome's download-popup. You could click on it now to open it with the Quake app. Or you can at this point arrange for such files to always be immediately opened without requiring a click.
 
-**6. Set auto-open for ".qz" files (optional)**
-
 If you want these ".qz" files to always be opened automatically, rather than requiring you to click on them, you can right click on the download-popup and select "Always open files of this type". This will take effect the next time you use "Open with Quake".
 
-## Firefox extension
+### Firefox extension
 
 Because this is a niche extension that requires other system setup to be useful, I'm not putting it on the Firefox web store.
 
@@ -110,11 +108,9 @@ You can leave the "Add-ons Manager" page now if you want.
 
 The extension icon for "Open with Quake", visible in the Extensions puzzle-piece menu, will have a "..." badge overlaid on it when downloading something. It will also have a momentary red badge if a download error happens. If you want to make this info more visible, you can "pin" the extension so it will always be shown in the toolbar. You can do this from the Extensions puzzle-piece menu by clicking on the gear icon to the right of "Open with Quake" and selecting "Pin to Toolbar".
 
-## Firefox download handling
+**6. Set auto-open for ".qz" files (optional)**
 
 The first time you use the "Open with Quake" menu item to download something, you should end up with a downloaded file that has the ".qz" extension, as shown in Firefox's download-popup. You could click on it now to open it with the Quake app. Or you can at this point arrange for such files to always be immediately opened without requiring a click.
-
-**6. Set auto-open for ".qz" files (optional)**
 
 If you want these ".qz" files to always be opened automatically, rather than requiring you to click on them, you can right click on the file in the download-popup and select "Always Open Similar Files". This will take effect the next time you use "Open with Quake".
 
