@@ -28,8 +28,7 @@
       "alarms",
       "contextMenus",
       "downloads",
-      "offscreen",
-      "scripting"
+      "offscreen"
     ],
     "host_permissions": [
       "<all_urls>"
