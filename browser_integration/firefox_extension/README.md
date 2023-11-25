@@ -6,7 +6,7 @@ For various reasons, Firefox's extension framework makes you jump through some h
 
 # Examining the Files
 
-The source files in this directory are used to build the .xpi package that installs the extension into Firefox. To truly examine the code, you should unpack the .xpi package rather than looking at these source files.
+The source files in this directory are used to build the .xpi package that installs the extension into Firefox. To truly examine the code, you should unpack the .xpi package in the "web-ext-artifacts" folder  rather than looking at these source files.
 
 A .xpi file is just a zipfile with a different extension, so you can use "unzip" to unpack it.
 
