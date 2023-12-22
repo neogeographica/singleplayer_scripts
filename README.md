@@ -1,6 +1,6 @@
 # What?
 
-New custom Quake singleplayer releases appear pretty frequently on places like [func_msgboard](http://www.celephais.net/board/forum.php) and the Quake Mapping Discord server. It would be nice to have a low-friction way to swim in this river of content -- especially since many of the releases are collections of small maps, any time spent fiddling with files or in the Quake console seems like too much useless overhead.
+New custom Quake singleplayer releases appear pretty frequently on places like [func_msgboard](http://www.celephais.net/board/forum.php), the Quake Mapping Discord server, [Slipgate Sightseer](https://www.slipseer.com/index.php), or even just links posted to social media. It would be nice to have a low-friction way to swim in this river of content -- especially since many of the releases are collections of small maps, any time spent fiddling with files or in the Quake console seems like too much useless overhead.
 
 This repo shares some ways that I've customized my singleplayer Quake setup on Linux to tackle that idea. The goal is to use desktop integration to quickly handle common stuff I do with Quake singleplayer releases: install, start play, resume play from savegame, hop between maps in a mapjam/speedmap pack, and uninstall.
 
