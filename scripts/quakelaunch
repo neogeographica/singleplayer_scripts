@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # This must match defaults_version in the packaged defaults config.
-expected_defaults_version=1
+expected_defaults_version=2
 
 # Set up our xdg config directory.
 configbase="$XDG_CONFIG_HOME"
@@ -84,6 +84,26 @@ function basic_validation {
   fi
 }
 
+# Function to determine the directory a shortcut points at.
+function gamedir_for_shortcut {
+  shortcut="$1"
+  gamedir=$(cat "$shortcut")
+  gamedir=${gamedir##+([[:space:]])}
+  gamedir=${gamedir%%+([[:space:]])}
+  if [[ -z "$gamedir" ]]
+  then
+    basic_validation
+    gamedir=$(basename "$shortcut")
+    if [[ -z "$userdata_home" || "$install_to_userdata" != "true" ]]
+    then
+      gamedir="$basedir"/"${gamedir%.*}"
+    else
+      gamedir="$userdata_home"/"${gamedir%.*}"
+    fi
+  fi
+  echo "$gamedir"
+}
+
 # First check to see if we are being run for cleanup.
 if [[ "$1" == "--cleanup" && $# != 2 ]]
 then
@@ -92,29 +112,8 @@ then
 fi
 if [[ "$1" == "--cleanup" ]]
 then
-  # Function to determine the directory a shortcut points at.
-  function gamedir_for_shortcut {
-    shortcut="$1"
-    gamedir=$(cat "$shortcut")
-    gamedir=${gamedir##+([[:space:]])}
-    gamedir=${gamedir%%+([[:space:]])}
-    if [[ -z "$gamedir" ]]
-    then
-      basic_validation
-      gamedir=$(basename "$shortcut")
-      if [[ -z "$userdata_home" || "$install_to_userdata" != "true" ]]
-      then
-        gamedir="$basedir"/"${gamedir%.*}"
-      else
-        gamedir="$userdata_home"/"${gamedir%.*}"
-      fi
-    fi
-    echo "$gamedir"
-  }
-
   arg="$2"
   gamedir=""
-
   if [[ -f "$arg" ]]
   then
     if [[ "${arg##*.}" == "quake" ]]
@@ -1378,6 +1377,28 @@ then
       fi
     fi
   fi
+  # Update shortcut(s) timestamp.
+  if [[ "$update_shortcut_timestamp" == "true" && -n "$shortcuts_dir" && -d "$shortcuts_dir" ]]
+  then
+    shortcuts=$(ls -1d "$shortcuts_dir"/*.quake 2> /dev/null)
+    if [[ -n "$shortcuts" ]]
+    then
+      while IFS= read -r file
+        do
+        target=$(gamedir_for_shortcut "$file")
+        if [[ "$target" == "$basedir"/"$mod" ]]
+        then
+          touch "$file"
+        else
+          if [[ -n "$userdata_home" && "$target" == "$userdata_home"/"$mod" ]]
+          then
+            touch "$file"
+          fi
+        fi
+      done <<< "$shortcuts"
+    fi
+  fi
+
   # Let's run some Quake!
   cd "$quakedir"
   if [[ -n "$startmap" && -z "$current_startmap" ]]
@@ -1403,22 +1424,11 @@ exit 1
 
 
 __DEFAULTS_CONF_START__
-‹‹ëd quakelaunch-defaults.conf ÕYQoÜÆ~×¯ØÒ,:ªNú”âŒØNÄQ
-É‚¢8ì‘{wŒH.³Kêtýõý¾Ù]’w’`Çh
-Î‰Üùfæ›™åõOã|e[e7ªßU^•f£‡º÷jSÕ&W¿ØA½¹V?^ßªÖ˜RõVyÓ‡¥÷ÚUz]>ÔíáìžÔƒQU«vpÊî[õÛ ïL­‡¶Øå…m7"Ö«sSõ;ãÔ¶¶k]+ëTgÜb«SVî"Ïs«zµÓ^µV5F·U»Uvè}Uš «™Ë^$µåü,ý¹ºæ-_Aâ¶Ð}4¶*_AéRÅs=O¥Á>ÞÜNfÂ:.*¬s¦èU§ûÝhâ©y°ÖžÂ–ÙW^õöŠ+¯þÁ•WxÖ²S}x„¬QæÁCŸ€¼ùŸ¨%žVj:P´zûÐ;¹M|uÕ¥ÝvhLË¨€«dW®Þox|toèþÙ¢~§{ÚWu­^ÿðóë_nÆàYZTªs+þÏ®LíwU±{ôÐÛÈº®ØY=ŽlU¡½q)'ºU¾3Eµ9ŠFi/„(¤¦”X¾‚v^ÙŽpÏëMo,µ·íË~
-î(Mrf"3éðÚÀv*‡C§µ©í^ ˆ€åa@ŠRÌƒn:x•ÛÓyeåÅÓ Å•º×jŒ´öE¯BPvËÃÎ½™öåM)g4•¦×UíLv¨Ë9P”-Z»³ÉF¯ASLašì^fËg>†÷Ì£ ÖádôdÆž+£æ®Z¨Öú”r‹ VU@ÖiWeB¤Î@6Ôò š[¼2}‘«~ÐR%f~|¯ö®êi^ƒd¦¹àƒÚq£îRÜ	|±p©Î)­Þ^·ãHyÇ!8%ðW„r\13 æQXÍDïf,_¸
-²C=åq‰ã/éÄ#jÔÖÞ‰ä	-š—@!TÛHÀb³9Å\xHÔÑ§¹úÀãýàÉ×ÞÒQBA)Ï$‡€”œ×öðÌª·«1¢%)þ„}ß#^†Õ]çl‡òÑÏÓõÝí[U%ì˜•1…ê7g/Ž [fþþúÃÛ«œÚÖW~r¸P²Ï9ìvw?Õº ¿ÿÌ»;Ù-IðóÎŸÍ}âw’x’±ÈÄ<öþ¹Ó²è·Ãó"W·ùÌ¶lÐcÒFÕ%aü“Ÿ=á‰eïCm¯%Ru=ú™Î•\3*¨¼ëQ<ó·MF0çÅòc¹.hjBŽRõ>j.
-GŒ%RBY›Î€¨ñ÷ê¸v’uNªfÂZ2¦6=Y©ØU¬B u7×•:4ºóW¥#„¢þùYún‡nwèÜÌ+¬c?³QYä/ˆ‰Û²ä_2EÔƒÁæðó>Çï µ¢Wó³;cºUük5_µ²í*Ê_nm¬>G“«ëÏŠ+Ñ}|õIågÎ'+¥&µÛÐ+Ì»ƒqU™«­¡ƒýäukØ‚kªX¶AŽ·L`l´¶q¶a °K¤õkßÑ”~g=ÃµÂÙvËÐ}ÅÚ±ex¯îZ®@LE|ÔDhŽx›‡Ât}H„P%ATùtXº«lÕ$ÆšYÓÊDäÈÎ°3 ÄÆY„,¤“YÊ8gÍf†A<0Òk{WÝØ£†"ÛX›ÃT4Q[h>?°a¬ Žü­ïÑH×ë³w××a/7{%	óø™ÞÈ{°RS3âeÊL*ÒAÖHN‹ X£=ÄœS]VPÔ(ü)†¢!Q[0i9º“zTWÒ40|6 yJpªÚPµNÀÒ¥Ô	žMåÙ7‚2‹bp4‰QÒÖè]]ƒ°ñ!	•i	Ì¥Zd°ÔÄF'j¨ßóœˆ
-ÊºnàH¬|ÉpBÌ«õ!Pe[-•v:—bM Ž¿XôxZhÓv¦îp&zùÐ ‡Ê/d‹Ä~ûÙ µÄ¡k†wñ=Í´´'¶¬è‚T¸J~œ³?€gK’jfA§ïH‘_MyÍºª«œ¬ÊÔEs8JÂkt#ýE)!Y%¡Ð’.wx‚\ÇB¡‹PEaC6Ñv ƒ8Ž}ŽœG6 |Ï·¦5NºÄ½uwjE7Íº3™[‚gR¢Óò˜:šlºý4R`™JÚ ÞÐÀ8èFÙB9l{™“Á±é+^ôÕÍêÎÖD.Låƒ2*zfh†ÁdDóZrCFq„B%éÛÚv»ðzkÓèØš‡€ö¹®»^›8q]ŒÝ¡‘h§ç8·³ê©¾³6LD7¤³ÃvÇÕPþ
-Jš’ÂÛ
-Æ —™1ÜL D\Óö—êÕ0É¡¼¸gì€ ?OÍÏf(-%rßžL­>õÀà5Ê
-ž¾©@§¼‡Ò –ê,O e.3··±:Ùv˜ª&Ï<–C3Yg!Á'¸=(ÌÄÙÂTŒa^‡¤gí¾Æ¸­‰M
-±V[jöF:Õ’Ð^¹ãy¸ÌÊ’HøÏ™ß†ÊI4HWÐuè½dè^¤4Ž^öÇõUše“`Œ•›Áˆ¥€Ý.ƒRàJß,n:P:âøþN^ª÷(È{Ô£K%‰>uåÓŒ?ÌºLFAí¦ŒCÀ†”êXæ¤ìIEQ³	êÔë7³˜è¢#%9­ÇµøGt„¤ÈÂ|HpbûF
-5ÇL&y]³ÄÖ@E—ÒÞÑcqz–»-¥Ké`ÔSé>*%aá×@„4XèöT6Û¢À©;H~al«þ Š)bªBS 0'óÓvþÐÕüºçD‡‰Ÿ´0ý¿EÇDšý>#Ë,BwS5è]Ñ°om×÷†Á€?29áépï…dTêqø”à/ÅxâÇãSº|YL~†CFLÇØœáxC}?l6¬*4QN¢`%´—ò²¾Ó´†Á>Ãñm6[8åÆø’™P g£¦söš¶¯6‡*lpAg½´ò¼
-7 ±ÛkÇ›v5Î;½Û±#þGê8£lÞ–°;˜K‰´»FŽ$tó«
-š.Ë
-Uu»ˆÓ€ŸœÝ:ôÕ©aAguHŠ½¤ñBAû»ƒtWÎfZÈU8!©áìŠdÞ*ÿäµö³öHƒ—ì†O´¡%|µ’?Ü²ÓüAÝ_c—sZÆk9Ú?îÁžúfêæýO]@"ö{Þ°­b¦Z`’m¢­9¶CÚç#KævÌ³L¦¨x‡¸À‡‹m?Þêœ~rðó‹pîãä:ç§ºÿõ×/Ç+žÙÙ*lÁ«ª}•ïõý|Ï«OïùêtÏWŸÞóõéž¯?½ço²çxÐ÷¼µÅlU6a¾=÷‚š&k©ûÊì%~Qí™4áDâŠ«"º¯˜ð#ÿòbMV²¼ŸéØ³'ÚóS„ïcì„‹Þb¶;âéñã„tÔ2*¦++Wqf°²·öqð¢kÏã7—ˆH[#ÝãEÞìrOSˆüeEƒÍtzú8Èp°ù:~®XÀV8aÔžÆÐØË¶Od åuö­0éëY©_b!¥fwáB•)©tY†shù2}-fÊü=z‹ï1¸`ÔŸî’OÕwß«èUÂÀs˜jÉ(}OÒ{ÓjÔ‰iùîdÚ‰PÖ‡ËcVôèj:¸5{.-Âµ†|ˆ¯ÍÌÐZÌÇ§'ž¢¶ríK7K0¿´éº·!éî$Üƒe[š˜…†€³…ÏÔù4,]L{v–Ë°U-Âýù“¾¦+UÞ?ôaR…3kh”rq3K8,Øº{6Žƒàs¼/¾9õÿ—zŸIx f{m¦Œó´
-¾Š©ÔÎ  lŸ‡àˆâ%…âoå2‚-ãšÿkª7£P“oó0Üg˜§³Ä;—r±/¯ä’·\¼ó«
-o8éæ©–;G ­°Ðkd2NjBŒ
-µ?‰-	Íñ2ë™Øúùýí÷×o§ðš"
-ÀDžYÊâÙ€¿Æ…,ßõÍy}q©òÒø·+7!˜ä«)£?º…_yöC¹]ÐÈ—f€éccúôÿš{Vùúœ&Ý ªH‚UbÓp-'ŽNÄõêdÈx4T}ôŠ?zÖ”ýZÏãÙÖ!  
+‹o²!f quakelaunch-defaults.conf ÕYQoÜÆ~×¯ØÒ,:ªIú”BFl'â(…ìAQ{äÞ#’Ëì’:]}¿ov—ä$81š‡s"wgg¾™ùfvøBýÓ8_ÛNÙvµW•Ùè±¼ÚÔÉÕÏvT¯oÔ7TgL¥«¼ÂÒ{íj½nêîpöOšÑ¨ºS;:e÷úuÔw¦ÑcWîòÒvëÕ¹©‡qjÛØµn”uª7nµÕ­©jw‘ç9„ÕƒÚi¯:«Z£»ºÛ*;¾®LÐÕ,e¯’ÚrH~–þ,îƒy×_žAâ÷¶ÔC4¶®¾€Ò•ŠçzžJƒß¼ý0›	ë¸¨´Î™rP½v“‰§æAÂZ{
+»Î®¸òj°W\yõ®¼ÂÈ°îêÃ#d2¦‡ìèÍÿD-yô´Ró¢Õ›‡ÁiÈm[à³jêÎ(í¶ck:F\%»rõnÃÃà£{C÷/;=@Ð¾nõêûŸ^ý|;ÏÚÐ¢J[ñ¶Špej¿«Ë]Ø£ÇÁ¶@¦ÔMsÀÈpd§Jíèý‹K9¹Ôò½)ëÍP´J{$D!5 ÄòÚye{ÂM<o6ƒ°ÔÞv/‡9¸£<4ËYˆ`Ì¤ÃÛ©œÖ¦±{8@ –‡)J1ºíáUnOçUµOWéA«)B ÐÖØ½
+A1@º-;÷fÞ—·•œÑZ T™A×O0Ù±©–@AP¶êìÎ¶&›¼IL1Al‚i¶û:óX¾ð1¼g±Ç £g3ö\5ouÝAµÎ§”[µê‚ü¸N»j"­t²¡–ÐÜâ•Ê\}ô£„F*1óËèµwõ@ó‚, 3-ÔØUˆ»u—âNàËˆ…K}pNe…ðöºcGÊ;ŽÁ)_ÊEpÅÌ€˜Gaµq¼›±`|éjdÈAô”Ç%"Œ¿¤¨5@ÐX{'’g´h^…DPo#‹Íæsá! ÑDŸæê=÷£$ßxKG	¥<“Rr2\;À3Å`‹)¢%)þ„}ß!^†Õ}ïlò1,Óõí‡7ªNØ1+!cÕ¯Ï^Avýù»›÷o®rjÛ\ùÈáJ@É~Ëa¯µ»û±Ñ%ÁøýgVØÝËnI‚ŸvFølé¿“Ä‹LE&Fà±÷Ï–ý@¿ƒ¸ž¹úð˜Ïl‡À=(mTýXÀ?ùÙž¸Üh¨íDªn&?Ó¹’kFåb•wª‚gþvÉ¦â²X~ì"×ÍB­@È1BêÁGÍEáˆ±DJ(kó5ý.Žk'Yç¤j&¬)¥¯¨³Dr †?€iƒæ:)Ld‚gX~¼MUJ/li‚ôŽLôxƒåk n+òT„«›­Çµ°wŸEbm-hB€	Œ–R— ƒ7oN\wdõäº`U‘^“E×d 9Á 2ÈÌå®f%FasKÑ­îý,ÀsaÄ¨R~V¢„uc_ÄÝS„Ü.»Çžn£²Èá·e)ÆÉ–QúÂáç} Ï#î½ÄÈÎÏîŒé‹øW±\UØ®ˆòg{ÿ0}Ž’ç±ƒžÎ-Ñ}zõIåÎ'uFÊ)Lê¶¡_ZvHÓª*W?X1BûYÛ¬aS¾­`Ù<×‘Ä°5PûÆÙ–ÀN™Ö¯}OS†õÔKg»-Ó÷kÇ¶éºëPtb*â£&BõÄÛ<”¦BJ…NdŸA‡¢Ô}`«ÿ#¹1…ÐÂêH-þÐ""ïDv†Y !6¿d¤m˜ÍRÆ9ëh6Yâ‘^Û{¸êÖ5UÙÆÚ¦¢‘”ØBóå-cWŠXÃô=:$é¼`}ööæ&ì%yeo£$a_¿Ð›àù`VjjF¼L•IU>ÈéEÒ" Öj1çT—]ê4þCQ†‘¨ªI5û“šÜÔÒ81|	FD‘6è"Tw¡s8KH—r/x¶µgïŒ²Q–££IŒâ&p°FÿîZ„ÁH¨LG`.Õz$‹§F>:QCýçDTÐÚèŽÄÊ—'Ä<é2^À$Ê¶Zºù\bˆ58þbáçi¡UÝ™ä¢
+—„ÐýHÁAb¿ùšl0LÍjb„ps€w%ñ=Í´´'¶tA*,’‡çìàÙ‘dÆ†YÐë;Ò@äWS]E³¾î§J/«² 5DÑ^§á5º‘þ¢”¬’PhËF/¸x‚\ÇB¡‹ÐIÀ )T©’	Ä»ñÔëÉydÂüwk:ã¤SÞ[w§öWtÓ¢C•»[ðLJtºA“C'3ƒM—¡Ò¢I%à ¶*àBIÄ"Ý([(‡­?3b686žSÁÅtÐDÐðÝwæ°&ra20¨¢áÞ Í°"˜Œh^KnÈ8¡PKzÆÖ¾›®žx½µéúÜ™‡€ö¹nú^›xë¼˜:d#ÑNÏq&±h(rõ­µáÖEtC@:;nw\å¯ ¤©(¼´°­dz¹7‡iÉŠ@äÀ5Ýp©NQ-“Ê‹{¦.úóÔülÒõ/Dî›“›»Oý0x…²‚§¯ÑQtœ‹L1Ò –ê,O e.s‡Ø'!ÒºU`ª†<óXÍd…?uO 0ïW¦fs$”N\´¼XLøZã¶&6)ÄþYm©ÙkéÖCPHB‹éŽïLÀeV–DúÃÎü:ÖN¢Aº‚¾G³%ƒ‡UJãèõ`\ÿX¥E6	Æ±ùKXP
+Øí2(®ôíê¶¥#Žïïäá¥z‡‚¼G=ºT’èóÍdžsŒ‹N›QÐ G dSË-WB`CÊNõN,sRö¤¢†¨Ù…uêÕëEÃLt9„k59­ÇøGt„¤ÈÂ|HpbûF
+5{]&y]³Ä6@EWÒÞÑcq‚ ó=¥+éâÐsé>*%aá×@„4XèöT6Û¢À©;H~áNÜÕúú)cªBS °$óÓ+Í# ëåÈëD‡™Ÿ´0ý¿EÇDšý>#×Y„î¶nÑ»8,¢aßØ¾7îÿ8ƒd(–rÂÓáÞ=
+É¨Ô'âð)ÁŸ‹ñÄÏŽÇ§tù¼˜ü™0bsã-qôÃ¸Ù°ªÐ`D9ˆ‚–Ð^ÊËæNÓ{üùsÄ·ÙbáœÓKfB‰žšÌÙkÚ¡ÞV¨°Á=îé„QžÇk}ìÆöÚñkƒ¿šî;½»©#þGê8£lÙ–°;XJ‰´»FŽ$tËEM¯«Uu»ŠÓ€Ý:ôÕ©aAguHŠ½¤ñBA{»ƒô½€Í>´Ïl„¤†³+’û†Tù'GûÏÚ#^²C>Ñ†–ðU!¸ë^óu…]Îi¹^ËÑþqöÐÇ0Sï4g`>uv‰ØïyÃ¶Š™jI¶ftæØiŸ,YÚ±Ì2¹EÅ9zà†û~šl~vñËáVøàãÍu (ÎÏCtþë¯ÿ¾žÆ\‹¹a¶àUÝ}‘ïõýrÏŸÞóåéž/?½ç«Ó=_}zÏßdÏñEßsr»UÕ†ûí¹¿Ô4YKÝ×f/ñ‹òhÏ¤N$N¡¸Úù0Å{zv'"¥JOuàç?ÄØ	Ãî‚G1Ûñ‡øF:j¹*¦‡•QD¼3XÙ[ûxñ¢kÏãwŸ—ˆH[#ÝÓ0s1`ÆÓ")h°™OOHö"?CÇÏE ¬À	EP{¾†Æ^>°}")¯‹ï¥ÑØH_ÏJåõ% Rjñ=@¨2%•®ªp _¦OÃåB™¿Goñ=..¸êÏs£äSõíÇw*z@@•0ða”z Ô’Qúž¤÷"¦Õ¤ÓòíÉm'BÙ.5*èÑb>¸3{.-ÃXCÆ¼ÓØÌ< ½±ÃýøôDÂS6VÆn ±4Y‚ù•MãNCÒì$ÌÁ²-MÌBC@‰ÙÊgê|¾,]Ì{v–×a«Z…oOúš®Tùð0„›b(ä¸³†Fy%ƒ›EÂaÁ>ÐÝ³ap¿Åûâ›Sÿ®÷™b¶7fÎè)Oëà«˜JÝÀðyŽ(^RP(þƒ#Ø2®ù¿î 3	5ù6—û÷é,ñÎ¥¶âðJ†lœrqæW—&N8iòÔÈÌHë,ôÚ™Œ“†£BíObKBsf=[?½ûðÝÍÇsxÍ`"Ï\ËâÅ!~‘-X¾ÚóæâRå•-ño_mB0É—cFt¿®òì‡j»¢1†f
+€ùƒkúüÿš{Vùúœ6M U$Á:±i˜CË‰“q‹†zM2d:ª>zÅ=k«Gþ3ËÕÚ"  
