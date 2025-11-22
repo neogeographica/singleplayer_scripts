@@ -351,7 +351,13 @@ function create_path_component_symlinks {
   fi
   tail=$(basename -- "$path")
   all_lower=$(echo "$tail" | tr '[:upper:]' '[:lower:]')
-  all_upper=$(echo "$tail" | tr '[:lower:]' '[:upper:]')
+  extension=${all_lower##*.}
+  if [[ "$extension" == "$all_lower" ]]
+  then
+    all_upper=$(echo "$tail" | tr '[:lower:]' '[:upper:]')
+  else
+    all_upper="$(echo "${tail%.*}" | tr '[:lower:]' '[:upper:]').$extension"
+  fi
   init_caps="$(echo "${all_lower:0:1}" | tr '[:lower:]' '[:upper:]')${all_lower:1}"
   # Symlink all these to the original. Note that we expect some failures here
   # so swallow stderr.
