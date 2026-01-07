@@ -1,8 +1,8 @@
 ## Who's this document for?
 
-This document is about an issue that should probably **not** matter to you if you are using an officially-released or built-from-default-configuration binary of [Quakespasm](http://quakespasm.sourceforge.net/) or a Quakespasm variant like [Quakespasm-Spiked](http://triptohell.info/moodles/qss/), [vkQuake](https://github.com/Novum/vkQuake), or [Ironwail](https://github.com/andrei-drexler/ironwail). It might matter though if you are using a custom build.
+This document is about an issue that should probably **not** matter to you if you are using an officially-released or built-from-default-configuration binary of [Quakespasm](http://quakespasm.sourceforge.net/), [Quakespasm-Spiked](http://triptohell.info/moodles/qss/), or [vkQuake](https://github.com/Novum/vkQuake). It might matter though if you are using a custom build.
 
-It **does** likely matter to you if you are using an official release of [FTE](http://fte.triptohell.info/) or [DarkPlaces](https://icculus.org/twilight/darkplaces/). Possibly some other Quake engines as well.
+It **does** likely matter to you if you are using an official release of [FTE](http://fte.triptohell.info/), [DarkPlaces](https://icculus.org/twilight/darkplaces/), or version 0.8.1 or later of [Ironwail](https://github.com/andrei-drexler/ironwail). Possibly some other Quake engines as well.
 
 I'll describe below how to check for sure whether this issue is relevant for you.
 
@@ -21,9 +21,11 @@ The table below lists the directory that each Quake engine will use for userdata
 | Quakespasm        | $HOME/.quakespasm        | no      |
 | Quakespasm-Spiked | $HOME/.quakespasm        | no      |
 | vkQuake           | $HOME/.vkquake           | no      |
-| Ironwail          | $HOME/.quakespasm        | no      |
+| Ironwail          | $HOME/.ironwail          | **YES** |
 | FTE               | $HOME/.local/share/quake | **YES** |
 | DarkPlaces        | $HOME/.darkplaces        | **YES** |
+
+(Ironwail's behavior switched to "active by default" in the 0.8.1 release.)
 
 You should double-check though to make sure what the Quake program you are using is actually doing. There's a lot of ways to check this, both from within Quake and without, but here's one foolproof way that works in all cases:
 * Start up your Quake program.
@@ -37,7 +39,7 @@ If you see the "quick.sav" savegame you created there (in "id1" under the basedi
 
 If you don't see the savegame though, you need to go find it! For the Quake engines in the table above it's probably in an "id1" subdirectory of the userdata directory shown in the table.
 
-So for example if you're using FTE, the savegame has probably been created in the "$HOME/.local/share/quake/id1" directory. For DarkPlaces it's probably in "$HOME/.darkplaces/id1". Etc. Once you've found the savegame you created, you know for sure what userdata home directory is being used by your Quake engine.
+So for example if you're using FTE, the savegame has probably been created in the "$HOME/.local/share/quake/id1" directory. For Ironwail it's probably in "$HOME/.ironwail/id1". Etc. Once you've found the savegame you created, you know for sure what userdata home directory is being used by your Quake engine.
 
 You may benefit from this userdata feature if you have Quake installed in a system-wide location and shared by multiple users. However this behavior does have some downsides, since it can confuse users or programs (including the quakelaunch script) who expect the original Quake behavior.
 
@@ -45,7 +47,7 @@ You may benefit from this userdata feature if you have Quake installed in a syst
 
 ## What's the easy solution?
 
-If you don't need/want the userdata behavior, the best and easiest solution is to turn it off. All of the Quake engines mentioned in this doc allow you to disable userdata with the "-nohome" commandline argument.
+If you don't need/want the userdata behavior, the best and easiest solution -- where possible -- is to turn it off. At the time of writing this, FTE, DarkPlaces, and Quakespasm-Spiked allow you to disable userdata with the "-nohome" commandline argument.
 
 If you want to make sure that the "-nohome" argument is always provided when you launch Quake, then make the "quake_args" option in quakelaunch.conf specify it. E.g. you could just have a line in your quakelaunch.conf that looks like this:
 ```
@@ -54,16 +56,21 @@ quake_args="-nohome"
 
 ## OK well is there some other solution?
 
-If on the other hand you **do** want the userdata behavior, and therefore you are **not** going to use the "-nohome" option, then you should tell quakelaunch where userdata subdirectories will be stored. You can do this with the value of the "userdata_home" option.
+If on the other hand you **do** want the userdata behavior (or can't avoid it), then you should tell quakelaunch where userdata subdirectories will be stored. You can do this with the value of the "userdata_home" option.
 
 I.e. for FTE you would set
 ```
 userdata_home="$HOME/.local/share/quake"
 ```
 
-Or for DarkPlaces you would set
+For DarkPlaces you would set
 ```
 userdata_home="$HOME/.darkplaces"
+```
+
+For Ironwail you would set
+```
+userdata_home="$HOME/.ironwail"
 ```
 
 Generally speaking, if "userdata_home" is set, then whenever quakelaunch needs to look for files it will look both in the relevant directory under basedir (if it exists) and in the relevant userdata subdirectory. The only exception to this is the treatment of savegames, which will only be looked for in the userdata subdirectory.
