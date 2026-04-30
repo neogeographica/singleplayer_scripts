@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # This must match defaults_version in the packaged defaults config.
-expected_defaults_version=2
+expected_defaults_version=3
 
 # Set up our xdg config directory.
 configbase="$XDG_CONFIG_HOME"
@@ -35,7 +35,6 @@ function message {
 function extract_defaults_conf {
   defaults_conf_start=$(awk '/^__DEFAULTS_CONF_START__/ {print NR + 1; exit 0;}' "$0")
   tail -n+$defaults_conf_start "$0" | gunzip > "$configbase/quakelaunch-defaults.conf"
-  __DEFAULTS_CONF_START__
 }
 
 # Make sure the config defaults & global config are in place, then read 'em.

@@ -8,13 +8,13 @@ Once these files have been used to set up desktop integration, the features desc
 
 If you have already installed [the scripts](../scripts/README.md) that we're going to hook into the desktop, great! If not go do that first.
 
-There are four steps in the desktop integration process. Those steps are numbered and called out below, with some other context and discussion around them.
+There are five steps in the desktop integration process. Those steps are numbered and called out below, with some other context and discussion around them.
 
 ## Prerequisites
 
 **1. Use "desktop_integration" as your working directory**
 
-Make sure that you are in a shell with this "desktop_integration" directory as the working directory, before proceeding to the sections below. All the example commands will assume this working directory.
+Make sure that you are in a shell with this "desktop_integration" directory as the working directory, before proceeding to the sections below. Some of the example commands will assume this working directory.
 
 ## Filetypes
 
@@ -26,12 +26,13 @@ The commands below show how you would define the filetypes, from a shell prompt 
 ```bash
 xdg-mime install --novendor --mode user x-quake.xml
 xdg-icon-resource install --context mimetypes --novendor --mode user --size 128 icons/quake-icon-128.png application-x-quake
+xdg-icon-resource install --context mimetypes --novendor --mode user --size 512 icons/quake-icon-512.png application-x-quake
 xdg-mime install --novendor --mode user x-bsp-map.xml
 update-mime-database ~/.local/share/mime
 ```
 There's a few reasons you might want to do things slightly differently, e.g.:
 * You might not want to install the x-quake filetype if you're not going to use ".quake" shortcuts, in which case you would skip the first two commands.
-* You might want to have the x-quake filetype but give it a different icon, in which case you would change the icon filepath and maybe the icon size in the second command.
+* You might want to have the x-quake filetype but give it a different icon, in which case you would change the icon filepath and maybe the icon size in the xdg-icon-resource command(s) that you use.
 * You might not want to install the x-bsp-map filetype if you will never care about directly opening individual mapfiles.
 
 Up to you!
@@ -48,9 +49,10 @@ Up to you!
 > ```
 > (For XFCE, or for older versions of GNOME/KDE, you may need to use different commands. See the [UNIX & Linux StackExchange](https://unix.stackexchange.com/questions/419895/if-i-have-a-mime-type-how-do-i-get-its-associated-icon-from-the-current-appearan) for a more detailed discussion.)
 >
-> Once you know the theme, you can use it in the "--theme" argument to the xdg-icon-resource command. For example in Pop!\_OS 22.04 LTS, which uses a GNOME desktop environment, the above gsettings command will tell me that my theme is called "Pop". Then I can use the following xdg-icon-resource command to install the icon... same as the earlier example, just with an additional "--theme" argument:
+> Once you know the theme, you can use it in the "--theme" argument to the xdg-icon-resource command. For example in Pop!\_OS 22.04 LTS, which used a GNOME desktop environment, the above gsettings command told me that my theme was called "Pop". Then used the following xdg-icon-resource commands to install the icon... same as the earlier example, just with an additional "--theme" argument:
 > ```bash
 > xdg-icon-resource install --theme Pop --context mimetypes --novendor --mode user --size 128 icons/quake-icon-128.png application-x-quake
+> xdg-icon-resource install --theme Pop --context mimetypes --novendor --mode user --size 512 icons/quake-icon-512.png application-x-quake
 > ```
 
 ## Applications
@@ -65,18 +67,36 @@ If you already have an existing application definition for launching Quake, you 
 
 ### Configuration
 
-**3. Set the Icon path and other things in the ".desktop" files (optional)**
+**3. Edit the ".desktop" files (optional)**
 
-You'll probably want an icon graphic for the Quake application. An example icon "quake-icon-512.png" is included in the "icons" directory here. Place that icon, or any other icon graphic you want to use for this, in some permanent location where it won't get deleted.
+The provided "quake.desktop" and "quakecleanup.desktop" files should work out-of-the-box, if you do all of the setup documented here.
 
-Now in "quake.desktop", uncomment the line that sets its Icon attribute and edit the value to be that icon's filepath.
+However, power users may want to edit them. For example, the default setup will make the "quake" application use the same icon as the quakelaunch-associated files; if you want a different icon you can specify that for the Icon key in the "quake.desktop" file. You can specify the icon file basename of any icon already installed in your system.
 
-Power users may want to edit other things about the two ".desktop" files. A few notes:
-* The most important aspect of each file is that its Exec path must properly locate the "quakelaunch" script. If you placed that script in a directory in your PATH as was recommended, then you don't need to change anything here; otherwise you will need to make this value be the whole absolute path to "quakelaunch".
+Other aspects of the .desktop files are editable too of course. Some notes:
+* The quakecleanup application is only meant to be used from an "Open With" context menu, and doesn't ever need to be started from the main application launcher. In GNOME you can hide it from the application launcher by changing NoDisplay to true in the "quakecleanup.desktop" file. In other desktop environments though, that setting may make quakecleanup more difficult or impossible to use from the "Open With" context menu.
 * The MimeType list declares the types of files this application is expected to be able to open. The list you'll see in these .desktop files is complete for the basic/common filetypes we expect to deal with. Note that if you later choose to open other kinds of files with the app (such as 7z archives, rar archives, etc.) those associations will also get remembered. Normally there's no need to modify this list.
 * The name of the desktop file itself ("quake.desktop" or "quakecleanup.desktop") is also significant, so don't change it unless you know what you're doing. This name is referenced when setting the default app for filetypes as described below, and it's also referenced inside the scripts when sending error notifications.
 
+Final and probably most important note: There's a potential gotcha if the directory containing the "quakelaunch" script is one that was added to your PATH by your shell startup scripts, for example something like "\~/.local/bin" instead of "/usr/local/bin". In that case, the Linux application launcher may or may not see that addition to the PATH, and therefore may or may not be able to find the "quakelaunch" application when it is launched from GUI actions. This is usually not an issue if your Linux variant uses a recent version of the "sddm" login program, but in other cases the app launcher may fail to recognize your PATH changes unless they are specifically done in a "\~/.profile" file in a format readable by the "sh" shell.
+
+PATH issues are too much of a rabbit hole to get into more here, but if you have placed "quakelaunch" in a directory you added to PATH and it is not getting launched, there are a few different things you can try:
+* Move "quakelaunch" to a default PATH directory such as "/usr/local/bin".
+* Edit the "quakelaunch.desktop" file to use a complete absolute path to the "quakelaunch" location, in the value for the "Exec" key.
+* Have a "\~/.profile" file that does the necessary PATH modifications in a sh-compatible format.
+
 ### Installation
+
+**4. Install the icon**
+To install the default quakelaunch icon -- which is the same as the icon for the files associated with quakelaunch -- you can execute these commands:
+```bash
+xdg-icon-resource install --context apps --novendor --mode user --size 128 icons/quake-icon-128.png quakelaunch
+xdg-icon-resource install --context apps --novendor --mode user --size 512 icons/quake-icon-512.png quakelaunch
+```
+
+If you changed the .desktop file above to reference some other icon path, you can skip this step.
+
+If you do this step but the icon does not show up for the "quake" application, there may be an icon-theme issue to deal with as described in step 2.
 
 **5. Install the applications**
 
@@ -127,6 +147,8 @@ To remove the applications:
 ```bash
 xdg-desktop-menu uninstall --mode user quake.desktop
 xdg-desktop-menu uninstall --mode user quakecleanup.desktop
+xdg-icon-resource uninstall --context apps --mode user --size 128 quakelaunch
+xdg-icon-resource uninstall --context apps --mode user --size 512 quakelaunch
 update-desktop-database ~/.local/share/applications
 ```
 
@@ -138,6 +160,7 @@ application/x-quake=quake.desktop
 To remove the special Quake-related filetypes you can execute these commands:
 ```bash
 xdg-icon-resource uninstall --context mimetypes --mode user --size 128 application-x-quake
+xdg-icon-resource uninstall --context mimetypes --mode user --size 512 application-x-quake
 xdg-mime uninstall --mode user x-quake.xml
 xdg-mime uninstall --mode user x-bsp-map.xml
 update-mime-database ~/.local/share/mime

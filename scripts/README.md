@@ -6,11 +6,15 @@ Once these are installed and working you can go over to the desktop_integration 
 
 # Setup
 
-Five steps are needed to get these scripts working. Those steps are numbered and called out below, with some other context and discussion around them.
+Six steps are needed to get these scripts working. Those steps are numbered and called out below, with some other context and discussion around them.
 
 ## Prerequisites
 
-**1. Install utilities**
+**1. Use "scripts" as your working directory**
+
+Make sure that you are in a shell with this "scripts" directory as the working directory, before proceeding to the sections below. Some of the example commands will assume this working directory.
+
+**2. Install utilities**
 
 Technically each of these utilities used by the "quakelaunch" script are optional, but at least the first two of these are involved in implementing fundamental features of the script and are therefore highly recommended.
 
@@ -18,21 +22,28 @@ If you want to use the auto-install feature -- which unlocks a huge part of the 
 
 In my case I installed that utility and its dependencies with:
 ```bash
-sudo apt-get install atool
+sudo apt install atool
 ```
 (You may then also want/need to install some of the various tools mentioned at the bottom of the atool webpage. For example, I already had tar, zip, gzip, and p7zip on my system... but I needed to install rar as well in order to handle .rar archives.)
 
-Next, if you want the script to generate notifications when errors happen, the "notify-send" utility needs to be present. In some cases your system may already include this utility by default; if not, you can find a package to install that will include it. For example on Pop!\_OS 22.04 LTS I needed to do this:
+Next, if you want the script to generate notifications when errors happen, the "notify-send" utility needs to be present. In some cases your system may already include this utility by default; if not, you can find a package to install that will include it. For example on Pop!\_OS I needed to do this:
 ```bash
-sudo apt-get install libnotify-bin
+sudo apt install libnotify-bin
 ```
 That package should also be appropriate for other Ubuntu-like systems.
 
-Finally, you may want to install a utility for playing a sound when a notification is generated. By default the "paplay" utility will be used. However, you can change that in your configuration file (as described below) if you don't have or wish to install "paplay", or if you just want to use some other sound player.
+You may want to install a utility for playing a sound when a notification is generated. By default the "paplay" utility will be used. However, you can change that in your configuration file (as described below) if you don't have "paplay", or if you just want to use some other sound player such as "pw-play".
 
-**2. Install Python module "expak" (optional)**
+The default configuration also uses the "gedit" application for looking at readme files and editing configurations, so you may need to install that application if it is not already present. If you don't have or want to use "gedit", you can use some other editor, but it must be specified in your quakelaunch configuration and must support the behaviors described in the comments there.
 
-The main script can also optionally use my Python module [expak](https://github.com/neogeographica/expak) to look inside pak files and make better decisions about things like what map to launch and whether a gamedir is "standalone" (has its own progs.dat). To use this module, you will need Python 2 or Python 3 installed; the script will use whatever executable has the name "python". (In the case of Pop!\_OS 22.04 LTS, which only has "python3", I needed to install the "python-is-python3" package in order to have a "python" executable available.)
+Bottom line for these other applications: For the sound file player, I would recommend just using whatever utility is already available on your system, editing your quakelaunch config as needed. For the text editor, installing gedit is harmless, so if you're fine with using gedit you can ensure that you have it:
+```bash
+sudo apt install gedit
+```
+
+**3. Install Python module "expak" (optional)**
+
+The main script can also optionally use my Python module [expak](https://github.com/neogeographica/expak) to look inside pak files and make better decisions about things like what map to launch and whether a gamedir is "standalone" (has its own progs.dat). To use this module, you will need Python 2 or Python 3 installed; the script will use whatever executable has the name "python". (In the case of Pop!\_OS 22.04 LTS, which only had "python3", I needed to install the "python-is-python3" package in order to have a "python" executable available.)
 
 The expak module will need to be installed for that version of Python using the Python package manager "pip", e.g.:
 ```bash
@@ -43,19 +54,27 @@ If you can't or don't want to install this module globally, there are various wa
 
 ## Installation
 
-**3. Put "quakelaunch" somewhere in your PATH**
+**4. Put "quakelaunch" somewhere in your PATH**
 
 The "quakelaunch" script from this directory must be copied to some directory that is in your PATH for executables. Make sure that the "quakelaunch" script in that location is marked as executable.
 
+Note: If/when you do the desktop integration, there's a potential gotcha if the directory you use for "quakelaunch" is one that was added to your PATH by your shell startup scripts, for example something like "\~/.local/bin" instead of "/usr/local/bin". See the discussion in step 3 of the [desktop integration readme](../desktop_integration/README.md).
+
 ## Configuration
 
-**4. Put the error sounds somewhere safe (optional)**
+**5. Install the error sounds**
 
-The "sounds" directory contains a selection of error beeps. If you want to use these sounds, make sure they are placed in a location where they will not get deleted. (Leaving them here among the files you downloaded for this repo is fine, if you're going to keep them intact.) Or find some other sounds you want to use.
+The "sounds" directory contains a selection of error beeps that are used by the default configuration. If you want to use these sounds, install them as follows:
+```bash
+mkdir -p ~/.local/share/sounds/quakelaunch
+cp sounds/* ~/.local/share/sounds/quakelaunch/
+```
 
-**5. Edit "quakelaunch.conf"**
+If you want to use other sounds, or no sounds at all, you can skip this step but you will then want to edit your quakelaunch config accordingly.
 
-If this is your first time using the "quakelaunch" script on this system, at this point you should run it once. Just invoke "quakelaunch" from a shell prompt. "quakelaunch" will exit with a message about needing to edit your "quakelaunch.conf". Normally, "quakelaunch.conf" will be in the location "~/.config/quakelaunch/quakelaunch.conf". In any case, its location will be printed out as part of that message.
+**6. Edit "quakelaunch.conf"**
+
+If this is your first time using the "quakelaunch" script on this system, at this point you should run it once. Just invoke "quakelaunch" from a shell prompt. "quakelaunch" will exit with a message about needing to edit your "quakelaunch.conf". Normally, "quakelaunch.conf" will be in the location "\~/.config/quakelaunch/quakelaunch.conf". In any case, its location will be printed out as part of that message.
 
 Open that "quakelaunch.conf" file in a text editor, read through it, and modify it as necessary to reflect your own Quake setup. This includes customizing the paths that locate things such as Quake and the above error sounds, and other options to customize the behavior of the scripts. You *will* need to initially modify at least some of the settings in this file before the scripts will work. This file is commented thoroughly enough that it should be pretty self-explanatory, but the "Usage notes" section below covers some interesting bits.
 
@@ -201,10 +220,22 @@ If these tests work you're probably good to go, but you can certainly also test 
 
 # Uninstallation
 
-If you ever want to get rid of these scripts you can just delete the files (scripts, conf, and sounds) from wherever you put them.
+The first and main thing to uninstall is the "quakelaunch" script itself, which you can just delete from wherever you placed it.
 
-If you installed the prereqs as above, and you need to uninstall them, you can do so with
+If you placed the error-beep sounds in the default location, you can remove those too:
 ```bash
-sudo apt-get remove atool
+rm -r ~/.local/share/sounds/quakelaunch
+```
+
+If you leave your quakelaunch config, it will be present later if you reinstall. If that's not desirable you can remove it as well:
+```bash
+rm -r ~/.config/quakelaunch
+```
+
+And if you installed prereqs as above, and you need to uninstall them, you can do so e.g.:
+```bash
+sudo apt remove atool
 sudo pip uninstall expak
 ```
+
+You may of course also choose to remove any other packages that you installed purely for quakelaunch purposes, such as libnotify-bin, gedit, and/or decompressors used by aunpack.

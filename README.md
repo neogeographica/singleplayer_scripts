@@ -24,7 +24,7 @@ This repo shares some ways that I've customized my singleplayer Quake setup on L
 <img src="browser.gif">
 </p>
 
-I currently use elementary OS and Pop!\_OS, both based on Ubuntu. So these files and commands should work on Ubuntu, elementary OS, Pop!\_OS, or other Ubuntu-likes. If not (or if they can also be tweaked to be compatible with other Linux flavors) then pull requests to improve them are welcome.
+I currently use Pop!\_OS 24.04, and in the past I've used this setup on Pop!\_OS 22.04 and elementary OS. So these files and commands should work on Ubuntu, elementary OS, Pop!\_OS, or other Ubuntu-likes. If not (or if they can also be tweaked to be compatible with other Linux flavors) then pull requests to improve them are welcome.
 
 # Features
 
@@ -118,5 +118,5 @@ It's certainly not required, but if you want to enable the "Open with Quake" beh
 
 Feel free to open a GitHub issue, or contact me in other ways if you are in a Discord channel with me etc. Things I would be interested in hearing about include:
 * Straight-up bugs. I.e. it doesn't work for you on Ubuntu.
-* Suggested ways to adapt the scripts and desktop integration to support other Linux flavors (or even UNIX, BSD, or macOS).
+* Suggested ways to adapt the scripts and desktop integration to support other Linux flavors.
 * Specific singleplayer releases that the script handles poorly, either in installation or launching.
