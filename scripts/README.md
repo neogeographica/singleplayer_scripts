@@ -64,19 +64,21 @@ Note: If/when you do the desktop integration, there's a potential gotcha if the 
 
 **5. Install the error sounds**
 
-The "sounds" directory contains a selection of error beeps that are used by the default configuration. If you want to use these sounds, install them as follows:
+The "sounds" directory contains a selection of error beep soundfiles. If you want to use these sounds, install them as follows:
 ```bash
 mkdir -p ~/.local/share/sounds/quakelaunch
 cp sounds/* ~/.local/share/sounds/quakelaunch/
 ```
 
-If you want to use other sounds, or no sounds at all, you can skip this step but you will then want to edit your quakelaunch config accordingly.
+If you want to use other sounds, or no sounds at all, you can skip this step.
+
+If you do want sounds (these or others) then you will need to edit your quakelaunch config accordingly in the following step.
 
 **6. Edit "quakelaunch.conf"**
 
 If this is your first time using the "quakelaunch" script on this system, at this point you should run it once. Just invoke "quakelaunch" from a shell prompt. "quakelaunch" will exit with a message about needing to edit your "quakelaunch.conf". Normally, "quakelaunch.conf" will be in the location "\~/.config/quakelaunch/quakelaunch.conf". In any case, its location will be printed out as part of that message.
 
-Open that "quakelaunch.conf" file in a text editor, read through it, and modify it as necessary to reflect your own Quake setup. This includes customizing the paths that locate things such as Quake and the above error sounds, and other options to customize the behavior of the scripts. You *will* need to initially modify at least some of the settings in this file before the scripts will work. This file is commented thoroughly enough that it should be pretty self-explanatory, but the "Usage notes" section below covers some interesting bits.
+Open that "quakelaunch.conf" file in a text editor, read through it, and modify it as necessary to reflect your own Quake setup. This includes customizing the paths that locate things such as Quake, selecting/enabling error sounds, and other options to customize the behavior of the scripts. You *will* need to initially modify at least some of the settings in this file before the scripts will work. This file is commented thoroughly enough that it should be pretty self-explanatory, but the "Usage notes" section below covers some interesting bits.
 
 If you ever want to find out what the default value is for some setting, you can reference the "quakelaunch-defaults.conf" file that lives in the same directory as "quakelaunch.conf". (Don't modify that defaults file.)
 
