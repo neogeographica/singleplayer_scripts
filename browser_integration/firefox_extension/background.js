@@ -156,61 +156,98 @@ browser.menus.onClicked.addListener(
     let url = info.linkUrl;
     let response;
     let didRedirect = false;
-    // Start a loop in order to support one META-refresh-style redirect.
-    while (true) {
-      // Note that fetch will by default handle any 301 redirect.
-      response = await fetch(url);
-      if (response.status !== 200) {
-        // Can't get it, too bad.
-        console.log("bad status trying to fetch URL: " + response.status);
-        setStatus(false, response.status.toString());
-        return;
-      }
-      // Make sure we're working with the actual final URL (might have had
-      // a 301 redirect).
-      url = response.url
-      // Check to see if this is an HTML document.
-      const contentType = response.headers.get('Content-Type');
-      if (!contentType.startsWith("text/html")) {
-        break;
-      }
-      // Hmm. This may be a page trying to redirect us with a META element,
-      // e.g. what t.co does.
-      // We will only tolerate one such redirect, to avoid getting stuck in
-      // a loop.
-      if (didRedirect) {
-        console.log("redirect led to another HTML page");
-        setStatus(false, "err");
-        return;
-      }
-      // OK we haven't tried a redirect yet so let's see if this page is
-      // asking us to do that.
-      const page = await response.text();
-      let parser = new DOMParser();
-      const doc = parser.parseFromString(page, "text/html");
-      for (element of doc.getElementsByTagName("META")) {
-        const attrs = element.attributes;
-        const httpEquiv = attrs.getNamedItem("http-equiv")
-        if ((httpEquiv !== null) && (httpEquiv.value.toLowerCase() === "refresh")) {
-          const contentValue = attrs.getNamedItem("content");
-          if (contentValue !== null) {
-            const urlMarker = contentValue.value.indexOf('=');
-            if (urlMarker !== -1) {
-              // OK I guess it's a redirect! We'll follow it.
-              url = contentValue.value.substring(urlMarker + 1)
-              console.log("redirecting to " + url);
-              didRedirect = true;
-              break;
+    try {
+      // Start a loop in order to support one META-refresh-style redirect.
+      while (true) {
+        // Interrogate the URL using fetch. Note that fetch will by default
+        // handle any 301 redirect.
+        // First attempt with HEAD to avoid downloading large files.
+        let methodUsed = 'HEAD';
+        response = await fetch(url, {method: methodUsed});
+        // If HEAD is not supported by the server, fall back to GET.
+        if (response.status === 405 || response.status === 501) {
+          methodUsed = 'GET';
+          response = await fetch(url, {method: methodUsed});
+        }
+        if (response.status !== 200) {
+          // Can't get it, too bad.
+          console.log("bad status trying to fetch URL: " + response.status);
+          setStatus(false, response.status.toString());
+          return;
+        }
+        // Make sure we're working with the actual final URL (might have had
+        // a 301 redirect).
+        url = response.url;
+        // Check to see if this is an HTML document.
+        const contentType = (response.headers.get('Content-Type') || '').toLowerCase();
+        if (!contentType.startsWith("text/html")) {
+          // Not HTML. Before breaking out to start the file download, cancel
+          // any existing download from fetch (especially if we used GET).
+          if (response.body) {
+            await response.body.cancel();
+          }
+          break;
+        }
+        // Hmm. This may be a page trying to redirect us with a META element,
+        // e.g. what t.co does.
+        // We will only tolerate one such redirect, to avoid getting stuck in
+        // a loop.
+        if (didRedirect) {
+          console.log("redirect led to another HTML page");
+          setStatus(false, "err");
+          return;
+        }
+        // Time for HTML page processing. If we fetched using HEAD, we need to
+        // get the body now.
+        if (methodUsed === 'HEAD') {
+          response = await fetch(url, {method: 'GET'});
+          if (response.status !== 200) {
+            console.log("bad status trying to fetch URL: " + response.status);
+            setStatus(false, response.status.toString());
+            return;
+          }
+          url = response.url;
+        }
+        // OK we haven't tried a redirect yet so let's see if this page is
+        // asking us to do that.
+        const page = await response.text();
+        let parser = new DOMParser();
+        const doc = parser.parseFromString(page, "text/html");
+        for (const element of doc.getElementsByTagName("META")) {
+          const attrs = element.attributes;
+          const httpEquiv = attrs.getNamedItem("http-equiv");
+          if ((httpEquiv !== null) && (httpEquiv.value.toLowerCase() === "refresh")) {
+            const contentValue = attrs.getNamedItem("content");
+            if (contentValue !== null) {
+              const urlMarker = contentValue.value.indexOf('=');
+              if (urlMarker !== -1) {
+                // OK I guess it's a redirect! We'll follow it.
+                // Strip whitespace and quotes around the redirect URL
+                let rawUrl = contentValue.value.substring(urlMarker + 1).trim();
+                if ((rawUrl.startsWith('"') && rawUrl.endsWith('"')) ||
+                    (rawUrl.startsWith("'") && rawUrl.endsWith("'"))) {
+                  rawUrl = rawUrl.slice(1, -1).trim();
+                }
+                // Resolve relative URLs against the current document URL
+                url = new URL(rawUrl, response.url).href;
+                console.log("redirecting to " + url);
+                didRedirect = true;
+                break;
+              }
             }
           }
         }
+        if (!didRedirect) {
+          // It's not a redirect (or at least not one we understand) so...
+          console.log("link goes to an HTML page");
+          setStatus(false, "err");
+          return;
+        }
       }
-      if (!didRedirect) {
-        // It's not a redirect (or at least not one we understand) so...
-        console.log("link goes to an HTML page");
-        setStatus(false, "err");
-        return;
-      }
+    } catch (err) {
+      console.log("network or parsing error during fetch: " + err);
+      setStatus(false, "err");
+      return;
     }
     // The filename will either be taken from the URL (using URL parsing
     // to make sure we ignore any URL parameters) or from the
