@@ -69,7 +69,7 @@ function setHeaders(e) {
   }
   const contentDisposition = {
     name: 'Content-Disposition',
-    value: 'attachment;filename=' + archiveFilename,
+    value: 'attachment; filename="' + archiveFilename.replace(/"/g, '\\"') + '"',
   };
   const contentType = {
     name: 'Content-Type',
@@ -283,8 +283,19 @@ browser.menus.onClicked.addListener(
     } else {
         path = getFilenameFromContentDispositionHeader(dispHeader)
     }
+    // Deal with odd failure cases and make sure we still have a filename.
+    if (path === "") {
+      path = "download";
+    }
+    // Chop off parent directories and see if URL-decoding is required.
+    let filename = path.substring(path.lastIndexOf('/') + 1);
+    try {
+      filename = decodeURIComponent(filename);
+    } catch (e) {
+      // Keep raw filename if decodeURIComponent fails.
+    }
     // Add the .qz extension.
-    archiveFilename = path.substring(path.lastIndexOf('/') + 1) + ".qz";
+    archiveFilename = filename + ".qz";
     try {
       // Open a new blank background tab first so we have the tab ID.
       tempTab = browser.tabs.create({
