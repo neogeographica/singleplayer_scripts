@@ -339,8 +339,12 @@ browser.menus.onClicked.addListener(
  */
 
 
-// stringToBytes is from
+// unreachable and stringToBytes are from
 //   https://github.com/mozilla/pdf.js/blob/4a4c6b98515ed233b3f078422ad805beee1cd760/src/shared/util.js
+
+function unreachable(msg) {
+  throw new Error(msg);
+}
 
 function stringToBytes(str) {
   if (typeof str !== "string") {
