@@ -35,18 +35,22 @@ You'll see that the URL given to "fetch" is the user-selected link (url = info.l
 
 The purposes of this fetch are to find the final URL (after any redirects) and, if it's actually a file rather than an HTML webpage, get the filename and proceed with the "real" download.
 
-That real download is the second outgoing request, where the code opens a new background tab on that final URL:
+That real download is the second outgoing request, where the code opens a background tab and then sets it to download that final URL:
 ```javascript
-    tempTab = browser.tabs.create({
-      active: false,
-      url: url
-    });
+      tempTab = browser.tabs.create({
+        active: false,
+        url: "about:blank"
+      });
+      const tabObj = await tempTab;
+      tempTabId = tabObj.id;
+      // ... other intervening code here ...
+      await browser.tabs.update(tempTabId, {url: url});
 ```
 
-You'll also see that just before that download is started, the code sets up two handlers "setHeaders" (which will run when we receive the headers for the download) and "finalize" (which will run when the download is done). Both of those handler functions are defined earlier in the file.
+You'll see that just before the download is started, the code sets handlers to listen on the activity of that tab: "setHeaders" (which will run when we receive the headers for the download), "finalize" (which will run when the download is done), and handlers for network errors or premature tab closures. These handler functions are defined earlier in the file.
 
 The setHeaders function makes two changes to the incoming download headers so that the downloaded file will properly open as a ".qz" file. It changes the destination filename to a name that ends in ".qz" (using the Content-Disposition header), and it sets the file type to "application/x-qz" (using the Content-Type header).
 
-The finalize function just calls setStatus to mark that everything is done... this clears any text from the extension badge and re-enables the "Open with Quake" menu item.
+The finalize function just calls setStatus to mark that everything is done... this clears any text from the extension badge and re-enables the "Open with Quake" menu item. Error handlers similarly call setStatus but with a temporary error indicator.
 
 That's it!

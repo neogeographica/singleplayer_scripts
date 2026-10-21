@@ -55,6 +55,7 @@ browser.runtime.onStartup.addListener(createMenuItem);
 // Global vars used by listener callbacks.
 var archiveFilename = "";
 var tempTab = null;
+var tempTabId = null;
 
 // Set the Content-Disposition header with desired filename as attachment,
 // and Content-Type with the appropriate MIME type for .qz files.
@@ -63,8 +64,7 @@ function setHeaders(e) {
     console.log("setHeaders called without archiveFilename set");
     return {};
   }
-  if (e.originUrl != browser.runtime.getURL('')) {
-    console.log("setHeaders called from non-extension origin");
+  if (tempTabId === null || e.tabId !== tempTabId) {
     return {};
   }
   const contentDisposition = {
@@ -101,7 +101,14 @@ function setStatus(inProgress, message) {
     if (browser.webRequest.onCompleted.hasListener(finalize)) {
       browser.webRequest.onCompleted.removeListener(finalize);
     }
+    if (browser.webRequest.onErrorOccurred.hasListener(handleRequestError)) {
+      browser.webRequest.onErrorOccurred.removeListener(handleRequestError);
+    }
+    if (browser.tabs.onRemoved.hasListener(handleTabRemoved)) {
+      browser.tabs.onRemoved.removeListener(handleTabRemoved);
+    }
     archiveFilename = "";
+    tempTabId = null;
     if (tempTab) {
       tempTab.then(
         (tabObj) => {browser.tabs.remove(tabObj.id);},
@@ -136,11 +143,28 @@ function setStatus(inProgress, message) {
 
 // Clean up when request is done.
 function finalize(e) {
-  if (e.originUrl != browser.runtime.getURL('')) {
-    console.log("finalize called from non-extension origin");
-    return {};
+  if (tempTabId === null || e.tabId !== tempTabId) {
+    return;
   }
   setStatus(false, "");
+}
+
+// Handle network/request failure.
+function handleRequestError(e) {
+  if (tempTabId === null || e.tabId !== tempTabId) {
+    return;
+  }
+  console.log("download request error occurred: " + e.error);
+  setStatus(false, "err");
+}
+
+// Handle user closing the temporary download tab prematurely.
+function handleTabRemoved(tabId, removeInfo) {
+  if (tempTabId === null || tabId !== tempTabId) {
+    return;
+  }
+  console.log("download tab was closed before completion");
+  setStatus(false, "err");
 }
 
 // Define what happens when our context menu item is used.
@@ -261,29 +285,40 @@ browser.menus.onClicked.addListener(
     }
     // Add the .qz extension.
     archiveFilename = path.substring(path.lastIndexOf('/') + 1) + ".qz";
-    // Set up our listeners for this URL.
-    browser.webRequest.onHeadersReceived.addListener(
-      setHeaders,
-      {urls: [url]},
-      ["blocking", "responseHeaders"],
-    );
-    browser.webRequest.onCompleted.addListener(
-      finalize,
-      {urls: [url]},
-      [],
-    );
-    // Open a new background tab to do the download.
-    tempTab = browser.tabs.create({
-      active: false,
-      url: url
-    });
-    tempTab.then(
-      {},
-      (reason) => {
-        console.log("failed to open tab with the archive file URL: " + reason);
-        setStatus(false, "err");
-      },
-    );
+    try {
+      // Open a new blank background tab first so we have the tab ID.
+      tempTab = browser.tabs.create({
+        active: false,
+        url: "about:blank"
+      });
+      const tabObj = await tempTab;
+      tempTabId = tabObj.id;
+      // Set up listeners filtered strictly to this tab.
+      const requestFilter = {
+        urls: ["<all_urls>"],
+        tabId: tempTabId
+      };
+      browser.webRequest.onHeadersReceived.addListener(
+        setHeaders,
+        requestFilter,
+        ["blocking", "responseHeaders"],
+      );
+      browser.webRequest.onCompleted.addListener(
+        finalize,
+        requestFilter,
+        [],
+      );
+      browser.webRequest.onErrorOccurred.addListener(
+        handleRequestError,
+        requestFilter
+      );
+      browser.tabs.onRemoved.addListener(handleTabRemoved);
+      // Now navigate the tab to the download URL.
+      await browser.tabs.update(tempTabId, {url: url});
+    } catch (reason) {
+      console.log("failed to open or navigate download tab: " + reason);
+      setStatus(false, "err");
+    }
   }
 );
 
