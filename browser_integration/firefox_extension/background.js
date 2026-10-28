@@ -212,8 +212,7 @@ browser.menus.onClicked.addListener(
           }
           break;
         }
-        // Hmm. This may be a page trying to redirect us with a META element,
-        // e.g. what t.co does.
+        // Hmm. This may be a page trying to redirect us with a META element.
         // We will only tolerate one such redirect, to avoid getting stuck in
         // a loop.
         if (didRedirect) {
